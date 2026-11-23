@@ -15,3 +15,8 @@
 dl.facts dd {
   overflow-wrap: anywhere;
 }
+
+/* Two figures in the narrow column: two columns, so the values do not wrap. */
+.tiles.pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

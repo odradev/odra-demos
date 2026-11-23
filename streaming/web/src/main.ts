@@ -338,7 +338,7 @@ function status(item: Item, accrued: bigint): { text: string; tone: "" | "good" 
   if (item.cancelled) return { text: "Stopped by the sender", tone: "warn" };
   if (item.withdrawn === item.deposit) return { text: "All withdrawn", tone: "good" };
   if (now < item.start) return { text: `Starts in ${formatDuration(item.start - now)}`, tone: "" };
-  if (accrued === item.deposit) return { text: "Fully paid out", tone: "good" };
+  if (accrued === item.deposit) return { text: "Ended, ready to withdraw", tone: "good" };
   return { text: `Streaming, ${formatDuration(item.stop - now)} left`, tone: "" };
 }
 
