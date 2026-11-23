@@ -127,7 +127,7 @@ Its look is the Odra web style shared by every project of this repository; see
 
 ```bash
 # 1. Build the two wasm packages the app depends on. Needs wasm-pack.
-cargo odra generate-client   # the transaction client: multisend_client/pkg-web
+cargo odra generate-client   # the transaction client: multisend_client/pkg-web (see the note below)
 cd web
 npm run reader               # the storage reader: storage_reader/pkg-web
 
@@ -135,6 +135,10 @@ npm run reader               # the storage reader: storage_reader/pkg-web
 npm install
 npm run dev
 ```
+
+`cargo odra generate-client` needs cargo-odra 0.2.1 or newer: 0.2.0 stops with `Project is not a
+workspace`. Until 0.2.1 is on crates.io, install it from its branch:
+`cargo install cargo-odra --locked --git https://github.com/odradev/cargo-odra --branch release/0.2.1`.
 
 `npm run build` writes a static site to `web/dist`. `web/src/contracts.json` holds the testnet
 addresses above; `npm run contracts` rewrites it from `resources/casper-test-contracts.toml` after

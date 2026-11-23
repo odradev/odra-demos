@@ -36,12 +36,15 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: pages-${{ runner.os }}-${{ hashFiles('*/rust-toolchain.toml', '*/Cargo.toml') }}
+          key: pages-${{ runner.os }}-${{ hashFiles('.github/workflows/pages.yml', '*/rust-toolchain.toml', '*/Cargo.toml') }}
           restore-keys: pages-${{ runner.os }}-
 
+      # cargo-odra comes from its 0.2.1 release branch: `generate-client` of the 0.2.0 on crates.io
+      # refuses a project that is not a Cargo workspace. Switch to crates.io once 0.2.1 is published.
       - name: Install cargo-odra and wasm-pack
         run: |
-          command -v cargo-odra || cargo install cargo-odra --locked
+          cargo install cargo-odra --locked --force \
+            --git https://github.com/odradev/cargo-odra --rev c050bde07f1dbfd647ace172b15b0e8a968a1ff0
           command -v wasm-pack || cargo install wasm-pack --locked
 
       - name: Add the wasm target to the pinned toolchain
