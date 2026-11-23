@@ -1,0 +1,205 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Multisend",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "CsprSent",
+        "description": null,
+        "members": [
+          {
+            "name": "sender",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "recipients",
+            "description": null,
+            "ty": "U32"
+          },
+          {
+            "name": "total",
+            "description": null,
+            "ty": "U512"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "TokenSent",
+        "description": null,
+        "members": [
+          {
+            "name": "sender",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "recipients",
+            "description": null,
+            "ty": "U32"
+          },
+          {
+            "name": "total",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AmountOverflow",
+      "description": "The sum of the amounts does not fit in the type of the amounts.",
+      "discriminant": 5
+    },
+    {
+      "name": "LengthMismatch",
+      "description": "There is not exactly one amount for every recipient.",
+      "discriminant": 2
+    },
+    {
+      "name": "NoRecipients",
+      "description": "The list of recipients is empty.",
+      "discriminant": 1
+    },
+    {
+      "name": "WrongAttachedValue",
+      "description": "The CSPR attached to the call is not the sum of the amounts.",
+      "discriminant": 4
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "One of the amounts is zero.",
+      "discriminant": 3
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "send_cspr",
+      "description": "Sends `amounts[i]` motes of CSPR to `recipients[i]`. The CSPR attached to the call must be exactly the sum of the amounts.",
+      "is_mutable": true,
+      "is_payable": true,
+      "arguments": [
+        {
+          "name": "recipients",
+          "description": null,
+          "ty": {
+            "List": "Key"
+          },
+          "optional": false
+        },
+        {
+          "name": "amounts",
+          "description": null,
+          "ty": {
+            "List": "U512"
+          },
+          "optional": false
+        },
+        {
+          "name": "__cargo_purse",
+          "description": null,
+          "ty": "URef",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "send_token",
+      "description": "Sends `amounts[i]` of the CEP-18 `token` from the caller to `recipients[i]`. The caller must have approved this contract for at least the sum of the amounts. The tokens go straight from the caller to each recipient; the contract never holds them.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "recipients",
+          "description": null,
+          "ty": {
+            "List": "Key"
+          },
+          "optional": false
+        },
+        {
+          "name": "amounts",
+          "description": null,
+          "ty": {
+            "List": "U256"
+          },
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "CsprSent",
+      "ty": "CsprSent"
+    },
+    {
+      "name": "TokenSent",
+      "ty": "TokenSent"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Multisend.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": []
+  }
+}

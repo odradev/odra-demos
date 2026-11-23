@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "multisend::Multisend"
+
+[[contracts]]
+fqn = "token::TestToken"

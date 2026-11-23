@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multisend on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Multisend",
+        appId: "csprclick-template",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Multisend</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                One sender on the left pays five recipients on the right at once.
+              </title>
+              <path
+                class="curve"
+                d="M70 100 C170 100 190 30 290 30 M70 100 C170 100 190 65 290 65 M70 100 H290 M70 100 C170 100 190 135 290 135 M70 100 C170 100 190 170 290 170"
+              />
+              <circle class="point" cx="70" cy="100" r="7" />
+              <circle class="point" cx="290" cy="30" r="4" />
+              <circle class="point" cx="290" cy="65" r="4" />
+              <circle class="point" cx="290" cy="100" r="4" />
+              <circle class="point" cx="290" cy="135" r="4" />
+              <circle class="point" cx="290" cy="170" r="4" />
+              <text x="70" y="194" text-anchor="middle">You</text>
+              <text x="290" y="194" text-anchor="middle">Recipients</text>
+            </svg>
+            <figcaption>One transaction, signed once.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What multisend is</div>
+            <p class="claim">Pay many accounts with one signature</p>
+            <p class="sub">
+              Paste a list of recipients and amounts, check it, sign once. Everyone on the list is paid in the
+              same transaction: <b>all of them or, if anything is wrong, none</b>.
+            </p>
+            <ul class="points">
+              <li>Works for CSPR and for CEP-18 tokens.</li>
+              <li>Tokens go straight from your wallet to each recipient; the contract holds nothing.</li>
+              <li>
+                It saves signing, not fees: the network charges about 1 CSPR per recipient for a token and
+                about 2 CSPR per recipient for CSPR.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-send" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Paste a list and send</h3>
+              <p class="sub">No list at hand? Start from three made-up accounts.</p>
+              <button id="example">Fill in an example</button>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Send to many</h2>
+            <div class="asof">Up to <span id="max-recipients"></span> recipients in one transaction.</div>
+            <form id="send">
+              <fieldset>
+                <legend>What to send</legend>
+                <div class="options">
+                  <button type="button" class="small" id="asset-token" data-asset="token">TEST</button>
+                  <button type="button" class="small" data-asset="cspr">CSPR</button>
+                </div>
+              </fieldset>
+
+              <details id="token-field">
+                <summary>Use another token</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <label>
+                Recipients and amounts
+                <textarea
+                  id="f-list"
+                  class="mono"
+                  spellcheck="false"
+                  placeholder="One per line: address, amount&#10;0203…0105, 25&#10;account-hash-2ccb…11c1, 10.5"
+                ></textarea>
+                <span class="hint">
+                  A public key or an account hash, then the amount in <span id="unit-hint">TEST</span>.
+                  Commas, spaces and tabs all work, so a spreadsheet column pair pastes as it is.
+                </span>
+              </label>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="send-error" class="notice" hidden></p>
+              <button id="send-submit" class="primary big" disabled>Send</button>
+              <p id="send-hint" class="hint"></p>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>The list as it will be sent</h2>
+            <div class="asof">Check every row before you sign. A transaction cannot be taken back.</div>
+            <div id="preview"><p class="empty">Nothing yet. Paste a list on the left.</p></div>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
