@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crowdfunding on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Crowdfunding",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Crowdfunding</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Pledges add up over time. A campaign whose pledges reach the goal by the deadline goes to its
+                creator. One that falls short gives every backer their pledge back.
+              </title>
+              <path class="area" d="M40 170 L100 146 L160 118 L215 76 L250 52 V170 Z" />
+              <path class="axis" d="M40 20 V170 H340" />
+              <path class="guide" d="M40 64 H340 M250 20 V170" />
+              <path class="curve" d="M40 170 L100 146 L160 118 L215 76 L250 52" />
+              <path class="curve" d="M40 170 L110 156 L180 138 L250 118" stroke-dasharray="2 7" />
+              <circle class="point" cx="250" cy="52" r="4" />
+              <circle class="point" cx="250" cy="118" r="4" />
+              <text x="28" y="68" text-anchor="end">Goal</text>
+              <text x="28" y="174" text-anchor="end">0</text>
+              <text x="40" y="190" text-anchor="middle">Start</text>
+              <text x="250" y="190" text-anchor="middle">Deadline</text>
+              <text x="298" y="40" text-anchor="middle">to the</text>
+              <text x="298" y="54" text-anchor="middle">creator</text>
+              <text x="298" y="114" text-anchor="middle">back to</text>
+              <text x="298" y="128" text-anchor="middle">backers</text>
+            </svg>
+            <figcaption>Where the pledges go once the deadline has passed.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What crowdfunding with a goal is</div>
+            <p class="claim">Raise tokens for an idea, all or nothing</p>
+            <p class="sub">
+              Set a <b>goal</b> and a <b>deadline</b>, and let anyone back your idea with tokens. If the
+              pledges reach the goal in time, you get all of them. If they fall short, every backer takes
+              their pledge back, so nobody pays for an idea that did not get enough support.
+            </p>
+            <ul class="points">
+              <li>Pledges sit in a contract with no admin and no fees until the deadline.</li>
+              <li>A pledge cannot be taken back while the campaign runs, so the total only grows.</li>
+              <li>Every campaign is public: anyone can see how far it has got, no wallet needed.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-back" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Back a campaign, or start one</h3>
+              <p class="sub">
+                Back an open campaign below with a few TEST. Or start your own with a 10 minute deadline, back
+                it yourself and claim it once it ends.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Start a campaign</h2>
+            <div class="asof">Nothing leaves your wallet: backers send the tokens.</div>
+            <form id="create">
+              <label>
+                What it is for
+                <input id="f-title" maxlength="64" placeholder="A new roof for the club house" required />
+                <span id="f-title-hint" class="hint"
+                  >A short title, up to 64 characters. Everyone sees it.</span
+                >
+              </label>
+
+              <label>
+                Goal
+                <span class="with-unit">
+                  <input id="f-goal" inputmode="decimal" placeholder="100" required />
+                  <span id="f-goal-symbol" class="unit">TEST</span>
+                </span>
+                <span class="hint">You get the pledges only if they add up to at least this much.</span>
+              </label>
+
+              <details>
+                <summary>Raise another token</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" required />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <fieldset>
+                <legend>Deadline</legend>
+                <div class="options">
+                  <button type="button" class="small" data-preset="10m">10 minutes</button>
+                  <button type="button" class="small" data-preset="1d">1 day</button>
+                  <button type="button" class="small" data-preset="1w">1 week</button>
+                  <button type="button" class="small" data-preset="30d">30 days</button>
+                </div>
+                <label>
+                  Pledges are taken until
+                  <input id="f-deadline" type="datetime-local" step="1" required />
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Start the campaign</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <div class="row">
+              <h2>Campaigns</h2>
+              <div class="tabs" role="tablist">
+                <button id="tab-all" role="tab" class="tab active" data-tab="all">All</button>
+                <button id="tab-mine" role="tab" class="tab" data-tab="mine">Started by me</button>
+                <button id="tab-backed" role="tab" class="tab" data-tab="backed">Backed by me</button>
+              </div>
+            </div>
+            <div id="list-note" class="asof">Newest first. Anyone can read them, no wallet needed.</div>
+            <div id="campaigns" class="list">
+              <p class="empty">Loading…</p>
+            </div>
+            <button id="more" hidden>Show older campaigns</button>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

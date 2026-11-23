@@ -1,0 +1,11 @@
+last_updated = "2026-11-23T13:00:42Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "Crowdfunding"
+package_name = "Crowdfunding"
+package_hash = "hash-c300ec089a732b92504b38b646450f5efa05341cfe3ddf6308a391e5d3571f34"

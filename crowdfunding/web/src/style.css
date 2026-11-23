@@ -1,0 +1,28 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The pledge form of a campaign takes the full width of its actions row. */
+.item .actions form.inline {
+  flex: 1 1 100%;
+}
+
+.item .actions .hint {
+  margin: 0;
+}
+
+/* The button under the list that loads older campaigns. */
+#more {
+  justify-self: start;
+  margin-top: 12px;
+}

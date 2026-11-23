@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "crowdfunding::Crowdfunding"
+
+[[contracts]]
+fqn = "token::TestToken"

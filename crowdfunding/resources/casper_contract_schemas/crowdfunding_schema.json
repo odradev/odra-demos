@@ -1,0 +1,527 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Crowdfunding",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Campaign",
+        "description": null,
+        "members": [
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "title",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "goal",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "created_at",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "deadline",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "pledged",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "claimed",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "CampaignCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "campaign_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "title",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "goal",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "deadline",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Claimed",
+        "description": null,
+        "members": [
+          {
+            "name": "campaign_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Pledged",
+        "description": null,
+        "members": [
+          {
+            "name": "campaign_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "backer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "pledged",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Refunded",
+        "description": null,
+        "members": [
+          {
+            "name": "campaign_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "backer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyClaimed",
+      "description": "The creator has claimed the pledges already.",
+      "discriminant": 10
+    },
+    {
+      "name": "CampaignEnded",
+      "description": "The deadline has passed: the campaign takes no more pledges.",
+      "discriminant": 6
+    },
+    {
+      "name": "CampaignNotEnded",
+      "description": "The deadline has not come yet.",
+      "discriminant": 7
+    },
+    {
+      "name": "CampaignNotFound",
+      "description": "No campaign has this id.",
+      "discriminant": 4
+    },
+    {
+      "name": "DeadlineNotInFuture",
+      "description": "The deadline is not in the future.",
+      "discriminant": 2
+    },
+    {
+      "name": "GoalNotReached",
+      "description": "The pledges did not reach the goal: the creator cannot claim them.",
+      "discriminant": 9
+    },
+    {
+      "name": "GoalReached",
+      "description": "The pledges reached the goal: they belong to the creator and cannot be taken back.",
+      "discriminant": 11
+    },
+    {
+      "name": "InvalidTitle",
+      "description": "The title is empty or longer than `MAX_TITLE_LENGTH` characters.",
+      "discriminant": 3
+    },
+    {
+      "name": "NotCreator",
+      "description": "Only the creator of the campaign may do this.",
+      "discriminant": 8
+    },
+    {
+      "name": "NothingToRefund",
+      "description": "The caller has no pledge to take back in this campaign.",
+      "discriminant": 12
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The amount to pledge is zero.",
+      "discriminant": 5
+    },
+    {
+      "name": "ZeroGoal",
+      "description": "The goal is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_campaign",
+      "description": "Creates a campaign that collects `token` towards `goal` until `deadline`, in milliseconds since the Unix epoch. The caller is its creator. Its id is the value `campaigns_count` returned before the call; the `CampaignCreated` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "title",
+          "description": null,
+          "ty": "String",
+          "optional": false
+        },
+        {
+          "name": "goal",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "deadline",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "pledge",
+      "description": "Pledges `amount` of the campaign's token, pulling it from the caller, who must have approved this contract for at least that amount. Allowed until the deadline, also once the goal is reached; a backer may pledge more than once.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "campaign_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "claim",
+      "description": "Sends every pledge to the creator, once the deadline has passed with the goal reached. Only the creator may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "campaign_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "refund",
+      "description": "Gives the caller their pledge back, once the deadline has passed with the goal missed.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "campaign_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "campaign",
+      "description": "Returns the campaign with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "campaign_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Campaign",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "campaigns_count",
+      "description": "Returns the number of campaigns created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "campaigns_of_creator",
+      "description": "Returns the ids of the campaigns `creator` created.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "creator",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "campaigns_of_backer",
+      "description": "Returns the ids of the campaigns `backer` pledged to.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "backer",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "pledge_of",
+      "description": "Returns what `backer` has pledged to the campaign and not taken back.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "campaign_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "backer",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "CampaignCreated",
+      "ty": "CampaignCreated"
+    },
+    {
+      "name": "Claimed",
+      "ty": "Claimed"
+    },
+    {
+      "name": "Pledged",
+      "ty": "Pledged"
+    },
+    {
+      "name": "Refunded",
+      "ty": "Refunded"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Crowdfunding.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "campaigns",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Campaign"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_creator",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_backer",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "pledges",
+        "index": 5,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      }
+    ]
+  }
+}
