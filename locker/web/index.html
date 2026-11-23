@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liquidity Locker on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Liquidity Locker",
+        appId: "csprclick-template",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Liquidity Locker</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Tokens held by the contract from the moment they are locked until the unlock date. The date
+                can only move later. After it, the owner can withdraw them.
+              </title>
+              <path class="area" d="M60 60 H240 V150 H60 Z" />
+              <path class="axis" d="M40 150 H340" />
+              <path class="guide" d="M240 40 V150 M300 40 V150" />
+              <path class="curve" d="M60 150 V60 H240" />
+              <path class="curve" d="M240 60 H300" stroke-dasharray="2 7" />
+              <circle class="point" cx="60" cy="60" r="4" />
+              <circle class="point" cx="240" cy="60" r="4" />
+              <rect class="point" x="138" y="96" width="24" height="20" rx="3" />
+              <path class="curve" d="M143 96 V90 A7 7 0 0 1 157 90 V96" />
+              <text x="150" y="134" text-anchor="middle">nobody can take them</text>
+              <text x="270" y="52" text-anchor="middle">only later</text>
+              <text x="60" y="170" text-anchor="middle">Locked</text>
+              <text x="240" y="170" text-anchor="middle">Unlocks on</text>
+              <text x="300" y="186" text-anchor="middle">extended</text>
+              <path class="guide" d="M300 150 V174" />
+            </svg>
+            <figcaption>The tokens stay in the contract until the unlock date.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a liquidity lock is</div>
+            <p class="claim">Show everyone that your liquidity cannot be pulled</p>
+            <p class="sub">
+              When a project adds its token to a DEX, it gets pool tokens that can take the liquidity back out
+              at any moment. Locking them here until a date proves, on chain, that it cannot do so before that
+              date.
+            </p>
+            <ul class="points">
+              <li>The tokens sit in a contract with no admin and no fees. Nobody can take them early.</li>
+              <li>The unlock date can only move later, never earlier.</li>
+              <li>Anyone can paste a token address below and see what is locked, by whom and until when.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST stands in for a pool token here. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-lock" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Lock some and look them up</h3>
+              <p class="sub">
+                Lock them for 10 minutes with the form below. Your lock then shows up under the token, for
+                everyone to see, and you can withdraw once it unlocks.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Lock tokens</h2>
+            <div class="asof">The tokens leave your wallet now and come back only after the unlock date.</div>
+            <form id="lock">
+              <label>
+                Token to lock
+                <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" required />
+                <span id="f-token-info" class="hint"></span>
+              </label>
+
+              <label>
+                How many
+                <span class="with-unit">
+                  <input id="f-amount" inputmode="decimal" placeholder="100" required />
+                  <span id="f-amount-symbol" class="unit">TEST</span>
+                </span>
+                <span id="f-amount-hint" class="hint"></span>
+              </label>
+
+              <fieldset>
+                <legend>Until when</legend>
+                <div class="options">
+                  <button type="button" class="small" data-preset="10m">10 minutes</button>
+                  <button type="button" class="small" data-preset="1d">1 day</button>
+                  <button type="button" class="small" data-preset="6mo">6 months</button>
+                  <button type="button" class="small" data-preset="1y">1 year</button>
+                </div>
+                <label>
+                  Unlocks on
+                  <input id="f-unlock" type="datetime-local" step="1" required />
+                  <span class="hint">You can move this date later afterwards, never earlier.</span>
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="lock-error" class="notice" hidden></p>
+              <button id="lock-submit" class="primary big" disabled>Lock tokens</button>
+              <p class="hint">
+                Your wallet will ask twice: first to let the contract take the tokens, then to lock them.
+              </p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section class="card">
+              <h2>Your locks</h2>
+              <div class="asof">Locks you own, including ones handed over to you.</div>
+              <div id="locks" class="list">
+                <p class="empty">Connect a wallet to see your locks.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>What is locked for a token</h2>
+              <div class="asof">
+                Paste the address of any token, a pool token for example. No wallet needed.
+              </div>
+              <form id="lookup" class="inline">
+                <input id="lookup-token" class="mono" placeholder="hash-… of a token" required />
+                <button>Show locks</button>
+              </form>
+              <div id="lookup-result" class="list"></div>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

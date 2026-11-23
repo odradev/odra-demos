@@ -1,0 +1,481 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Locker",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Lock",
+        "description": null,
+        "members": [
+          {
+            "name": "owner",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "locked_at",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "unlock_time",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "withdrawn",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "LockExtended",
+        "description": null,
+        "members": [
+          {
+            "name": "lock_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "previous_unlock_time",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "unlock_time",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Locked",
+        "description": null,
+        "members": [
+          {
+            "name": "lock_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "owner",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "unlock_time",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "OwnershipTransferred",
+        "description": null,
+        "members": [
+          {
+            "name": "lock_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "previous_owner",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "new_owner",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Withdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "lock_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "owner",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyOwner",
+      "description": "The new owner is the owner already.",
+      "discriminant": 8
+    },
+    {
+      "name": "AlreadyWithdrawn",
+      "description": "The tokens of the lock have been withdrawn already.",
+      "discriminant": 6
+    },
+    {
+      "name": "LockNotFound",
+      "description": "No lock has this id.",
+      "discriminant": 3
+    },
+    {
+      "name": "NotLater",
+      "description": "The new unlock time is not later than the current one.",
+      "discriminant": 7
+    },
+    {
+      "name": "NotOwner",
+      "description": "Only the owner of the lock may do this.",
+      "discriminant": 4
+    },
+    {
+      "name": "StillLocked",
+      "description": "The unlock time has not come yet.",
+      "discriminant": 5
+    },
+    {
+      "name": "UnlockTimeNotInFuture",
+      "description": "The unlock time is not in the future.",
+      "discriminant": 2
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The amount to lock is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "lock",
+      "description": "Locks `amount` of `token` until `unlock_time`, pulling it from the caller, who must have approved this contract for at least that amount. The caller owns the lock. Its id is the value `locks_count` returned before the call; the `Locked` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "unlock_time",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "extend",
+      "description": "Moves the unlock time of a lock to `new_unlock_time`, which must be later than the current one. Only the owner may call it, also after the lock has expired.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "lock_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "new_unlock_time",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "transfer_ownership",
+      "description": "Hands a lock over to `new_owner`, who may then extend, hand over and withdraw it. Only the owner may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "lock_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "new_owner",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw",
+      "description": "Sends the tokens of an expired lock to its owner. Only the owner may call it, at or after the unlock time.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "lock_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "get_lock",
+      "description": "Returns the lock with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "lock_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Lock",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "locks_count",
+      "description": "Returns the number of locks created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "locks_of",
+      "description": "Returns the ids of the locks `owner` owns, withdrawn ones included.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "owner",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "locks_of_token",
+      "description": "Returns the ids of every lock of `token`, withdrawn ones included.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "locked_amount",
+      "description": "Returns the amount of `token` locked and not withdrawn yet, expired locks included.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "LockExtended",
+      "ty": "LockExtended"
+    },
+    {
+      "name": "Locked",
+      "ty": "Locked"
+    },
+    {
+      "name": "OwnershipTransferred",
+      "ty": "OwnershipTransferred"
+    },
+    {
+      "name": "Withdrawn",
+      "ty": "Withdrawn"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Locker.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "locks",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Lock"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_owner",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_token",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "locked",
+        "index": 5,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      }
+    ]
+  }
+}

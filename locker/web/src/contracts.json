@@ -1,0 +1,13 @@
+{
+  "last_updated": "2026-11-23T11:41:46Z",
+  "contracts": [
+    {
+      "name": "TestToken",
+      "package_hash": "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+    },
+    {
+      "name": "Locker",
+      "package_hash": "hash-7677cedb46c36e2ca04eb8cde0252c2f38777b1cee20ddf4833ac8eff686166e"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The extend and hand-over forms of a lock: collapsed until opened. */
+.item .manage {
+  display: grid;
+  gap: 8px;
+}
+
+.item .manage:empty {
+  display: none;
+}
+
+/* Everything locked for one token: its address, the totals, the table of locks. */
+.token-view {
+  display: grid;
+  gap: 12px;
+}
+
+.token-view > .hint {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
