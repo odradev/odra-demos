@@ -1,0 +1,11 @@
+last_updated = "2026-11-23T13:00:26Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "Splitter"
+package_name = "Splitter"
+package_hash = "hash-f6d09da244b84973445c8005376dc95d91cdd0ebd080257135a0ce06cac1d4f2"

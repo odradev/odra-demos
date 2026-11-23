@@ -1,0 +1,24 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* One token of a split: the bar of what was withdrawn, the tiles, the table of payees. */
+.flow {
+  display: grid;
+  gap: 12px;
+}
+
+/* The table of how a payment will be divided, under the sentence that sums it up. */
+#pay-preview .scroll {
+  margin-top: 8px;
+}

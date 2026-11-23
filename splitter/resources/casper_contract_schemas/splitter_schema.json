@@ -1,0 +1,620 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Splitter",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Payee",
+        "description": null,
+        "members": [
+          {
+            "name": "account",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "share",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "PaymentReceived",
+        "description": null,
+        "members": [
+          {
+            "name": "split_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "payer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "PaymentWithdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "split_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "payee",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Split",
+        "description": null,
+        "members": [
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "total_shares",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "payees",
+            "description": null,
+            "ty": {
+              "List": "Payee"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "SplitCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "split_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "payees",
+            "description": null,
+            "ty": "U32"
+          },
+          {
+            "name": "total_shares",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AmountTooLarge",
+      "description": "The split would receive more of the token than the contract can divide.",
+      "discriminant": 10
+    },
+    {
+      "name": "DuplicatePayee",
+      "description": "An account is listed twice.",
+      "discriminant": 5
+    },
+    {
+      "name": "LengthMismatch",
+      "description": "There is not exactly one share for every payee.",
+      "discriminant": 3
+    },
+    {
+      "name": "NoPayees",
+      "description": "The list of payees is empty.",
+      "discriminant": 1
+    },
+    {
+      "name": "NotPayee",
+      "description": "The caller is not a payee of the split.",
+      "discriminant": 11
+    },
+    {
+      "name": "NothingToWithdraw",
+      "description": "The caller has nothing to withdraw from the split in this token.",
+      "discriminant": 12
+    },
+    {
+      "name": "SharesOverflow",
+      "description": "The shares add up to more than fits in a `u64`.",
+      "discriminant": 6
+    },
+    {
+      "name": "SplitNotFound",
+      "description": "No split has this id.",
+      "discriminant": 8
+    },
+    {
+      "name": "SplitterAsPayee",
+      "description": "The splitter contract itself is listed as a payee.",
+      "discriminant": 7
+    },
+    {
+      "name": "TooManyPayees",
+      "description": "The list has more than `MAX_PAYEES` payees.",
+      "discriminant": 2
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The amount to pay in is zero.",
+      "discriminant": 9
+    },
+    {
+      "name": "ZeroShare",
+      "description": "One of the shares is zero.",
+      "discriminant": 4
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_split",
+      "description": "Creates a split: `payees[i]` receives `shares[i]` parts of every payment. The id of the split is the value `splits_count` returned before the call; the `SplitCreated` event carries it. At most `MAX_PAYEES` payees, each listed once, each with a share above zero.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "payees",
+          "description": null,
+          "ty": {
+            "List": "Key"
+          },
+          "optional": false
+        },
+        {
+          "name": "shares",
+          "description": null,
+          "ty": {
+            "List": "U64"
+          },
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "pay",
+      "description": "Pays `amount` of the CEP-18 `token` into a split: the contract pulls it from the caller, who must have approved this contract for at least that amount. Only tokens paid in this way count. A plain transfer to the contract does not say which split it is for, so it belongs to no split and stays in the contract for good.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw",
+      "description": "Sends the caller everything they are due from a split in `token` and have not withdrawn.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "split",
+      "description": "Returns the split with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Split",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "splits_count",
+      "description": "Returns the number of splits created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "splits_of_creator",
+      "description": "Returns the ids of the splits `creator` created.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "creator",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "splits_of_payee",
+      "description": "Returns the ids of the splits `payee` is a payee of.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "payee",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "tokens_of",
+      "description": "Returns the tokens paid into a split, in the order of their first payment.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "Key"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "received",
+      "description": "Returns what a split has received in `token`, in total.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "paid_out",
+      "description": "Returns what the payees of a split have withdrawn in `token`, together.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "released",
+      "description": "Returns what `payee` has withdrawn from a split in `token`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "payee",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdrawable",
+      "description": "Returns what `withdraw` would send `payee` now; zero for an account that is not a payee.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "split_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "payee",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "PaymentReceived",
+      "ty": "PaymentReceived"
+    },
+    {
+      "name": "PaymentWithdrawn",
+      "ty": "PaymentWithdrawn"
+    },
+    {
+      "name": "SplitCreated",
+      "ty": "SplitCreated"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Splitter.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "splits",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Split"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_creator",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_payee",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "tokens",
+        "index": 5,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "Key"
+          }
+        }
+      },
+      {
+        "name": "received",
+        "index": 6,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      },
+      {
+        "name": "paid_out",
+        "index": 7,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      },
+      {
+        "name": "released",
+        "index": 8,
+        "kind": "mapping",
+        "key": {
+          "Tuple3": [
+            "U64",
+            "Key",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      }
+    ]
+  }
+}

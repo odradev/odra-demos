@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Splitter on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Payment Splitter",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Payment Splitter</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                One payment on the left divides into three parts on the right: 50, 30 and 20 percent.
+              </title>
+              <path class="curve" style="stroke-width: 12" d="M60 100 H150" />
+              <path class="curve" style="stroke-width: 6" d="M150 100 C220 100 220 40 280 40" />
+              <path class="curve" style="stroke-width: 3.6" d="M150 100 H280" />
+              <path class="curve" style="stroke-width: 2.4" d="M150 100 C220 100 220 160 280 160" />
+              <circle class="point" cx="60" cy="100" r="8" />
+              <circle class="point" cx="280" cy="40" r="5" />
+              <circle class="point" cx="280" cy="100" r="5" />
+              <circle class="point" cx="280" cy="160" r="5" />
+              <text x="296" y="44">50%</text>
+              <text x="296" y="104">30%</text>
+              <text x="296" y="164">20%</text>
+              <text x="60" y="194" text-anchor="middle">Payment</text>
+              <text x="280" y="194" text-anchor="middle">Payees</text>
+            </svg>
+            <figcaption>The parts are fixed when the split is created.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a payment splitter is</div>
+            <p class="claim">Share every payment by fixed parts</p>
+            <p class="sub">
+              List who gets what share, once. From then on anyone can pay tokens into the split, and
+              <b>each payee withdraws their part whenever they like</b>. Nobody, the creator included, can
+              change the shares or take someone else's part.
+            </p>
+            <ul class="points">
+              <li>For a team, a band or a joint project that is paid together and shares the income.</li>
+              <li>Any CEP-18 token. Payments are counted per split and per token.</li>
+              <li>One contract holds every split. It has no owner and takes no fees.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-split" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Split a payment with yourself</h3>
+              <p class="sub">
+                Create a split of you and two made-up accounts, pay 100 TEST into it, then withdraw your part
+                under "Your splits".
+              </p>
+              <button id="example">Fill in an example</button>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Create a split</h2>
+            <div class="asof">
+              Up to <span id="max-payees"></span> payees. The shares cannot be changed later.
+            </div>
+            <form id="create">
+              <label>
+                Payees and shares
+                <textarea
+                  id="f-list"
+                  class="mono"
+                  spellcheck="false"
+                  placeholder="One per line: address, share&#10;0203…0105, 50&#10;account-hash-2ccb…11c1, 30"
+                ></textarea>
+                <span class="hint">
+                  A public key or an account hash, then a whole number of shares. A payee gets their shares
+                  divided by all the shares: 50, 30 and 20 make 50%, 30% and 20%, and so do 5, 3 and 2.
+                </span>
+              </label>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="create-summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Create the split</button>
+              <p id="create-hint" class="hint"></p>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>The split as it will be created</h2>
+            <div class="asof">Check every row: nobody can change a split once it exists.</div>
+            <div id="preview"><p class="empty">Nothing yet. Paste a list on the left.</p></div>
+          </section>
+        </div>
+
+        <div class="split">
+          <section class="card">
+            <h2>Pay into a split</h2>
+            <div class="asof">The tokens go to the split's payees by their shares.</div>
+            <form id="pay">
+              <label>
+                Split number
+                <input id="p-split" inputmode="numeric" placeholder="0" required />
+              </label>
+              <label>
+                How much
+                <span class="with-unit">
+                  <input id="p-amount" inputmode="decimal" placeholder="100" required />
+                  <span id="p-symbol" class="unit">TEST</span>
+                </span>
+              </label>
+              <details>
+                <summary>Use another token</summary>
+                <label>
+                  Token contract
+                  <input id="p-token" class="mono" placeholder="hash-… of a CEP-18 token" />
+                  <span id="p-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <div class="callout">
+                <div class="label">How it will be divided</div>
+                <p id="pay-summary"></p>
+                <div id="pay-preview"></div>
+              </div>
+
+              <p id="pay-error" class="notice" hidden></p>
+              <button id="pay-submit" class="primary big" disabled>Pay in</button>
+              <p class="hint">
+                Your wallet will ask twice: first to let the contract take the tokens, then to pay them in.
+                Pay through this form: tokens sent straight to the contract belong to no split and are lost.
+              </p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section class="card">
+              <div class="row">
+                <h2>Your splits</h2>
+                <div class="tabs" role="tablist">
+                  <button id="tab-paying" role="tab" class="tab active">Paying me</button>
+                  <button id="tab-created" role="tab" class="tab">Created by me</button>
+                </div>
+              </div>
+              <div id="splits" class="list">
+                <p class="empty">Connect a wallet to see your splits.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Look at any split</h2>
+              <div class="asof">Every split has a number and is public. No wallet needed.</div>
+              <form id="lookup" class="inline">
+                <input id="lookup-id" inputmode="numeric" placeholder="Split number, e.g. 0" required />
+                <button>Show</button>
+              </form>
+              <div id="lookup-result" class="list"></div>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

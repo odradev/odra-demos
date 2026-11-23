@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "splitter::Splitter"
+
+[[contracts]]
+fqn = "token::TestToken"
