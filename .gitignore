@@ -1,0 +1,8 @@
+target/
+wasm/
+.env
+.env.*
+!.env.sample
+.idea/
+.vscode/
+_site/

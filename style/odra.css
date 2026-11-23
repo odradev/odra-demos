@@ -1,0 +1,334 @@
+/* Odra web style — tokens and components shared by Odra's pages.
+   Light only: the palette is built around the logo's blue on a light page. */
+
+:root {
+  color-scheme: only light;
+
+  /* Brand */
+  --brand: #5d84ec;          /* the logo's blue: header band, and "Odra" wherever data is drawn */
+  --on-brand: #ffffff;
+  /* The blue for controls: the brand darkened until small white text on it passes contrast (4.8:1). */
+  --brand-strong: color-mix(in srgb, var(--brand) 82%, #0b0b0b);
+  --brand-stronger: color-mix(in srgb, var(--brand) 70%, #0b0b0b);
+
+  /* Surfaces */
+  --page: #f4f3f0;
+  --surface: #fcfcfb;
+  --border: #e2e0da;
+  --grid: #e9e7e1;
+
+  /* Text */
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7b7a74;
+
+  /* Data */
+  --data-odra: var(--brand);
+  --data-odra-soft: color-mix(in srgb, var(--data-odra) 38%, var(--surface));  /* a second, lighter step of the Odra series */
+  --data-odra-wash: color-mix(in srgb, var(--data-odra) 14%, var(--surface));  /* the area under an Odra line */
+  --data-other: #eb6834;
+  --data-neutral: #c9c7bf;
+
+  /* Notice */
+  --warn-bg: #fdf1d6;
+  --warn-text: #6b4a00;
+
+  /* Shape and space */
+  --radius-card: 12px;
+  --radius-tile: 10px;
+  --radius-pill: 999px;
+  --gutter: 16px;
+  --gap: 20px;
+  --content-width: 1180px;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font: 15px/1.5 var(--font);
+}
+
+a { color: var(--text-primary); }
+
+/* ---------- Header band ---------- */
+
+.band { background: var(--brand); color: var(--on-brand); }
+.band .inner {
+  max-width: var(--content-width); margin: 0 auto; padding: var(--gutter);
+  display: flex; align-items: center; gap: 16px;
+}
+.band img { display: block; height: 32px; width: auto; }
+.band .sep { width: 1px; height: 28px; background: rgb(255 255 255 / 0.5); }
+.band h1 { font-size: 23px; font-weight: 650; line-height: 1; margin: 0; letter-spacing: -0.01em; }
+
+/* ---------- Page ---------- */
+
+main { max-width: var(--content-width); margin: 0 auto; padding: 24px var(--gutter) 56px; }
+.lede { color: var(--text-secondary); margin: 0 0 28px; max-width: 68ch; }
+.hint { color: var(--text-muted); font-size: 13px; margin: 0 0 8px; }
+footer { color: var(--text-muted); font-size: 13px; margin-top: 28px; max-width: 80ch; }
+
+/* ---------- Card ---------- */
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-card); padding: 20px; min-width: 0;
+}
+.card > h2 { font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 0.08em; }
+.card > .asof { color: var(--text-muted); font-size: 13px; margin: 2px 0 16px; }
+.card h3 { font-size: 14px; margin: 24px 0 2px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: var(--gap); }
+
+/* ---------- Stat tile ---------- */
+
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tile { border: 1px solid var(--border); border-radius: var(--radius-tile); padding: 12px; min-width: 0; }
+.tile .label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.tile .value { font-size: 28px; font-weight: 650; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.tile .sub { color: var(--text-secondary); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* ---------- Pill ---------- */
+
+.pill {
+  display: inline-block; margin-top: 6px; padding: 1px 7px; border-radius: var(--radius-pill);
+  background: var(--warn-bg); color: var(--warn-text); font-size: 12px;
+}
+
+/* ---------- Headline gauge ---------- */
+
+.hero {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 36px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: 24px 28px; margin-bottom: var(--gap);
+}
+.gauge { position: relative; flex: 0 1 300px; min-width: 220px; margin: 0 auto; }
+.gauge svg { display: block; width: 100%; height: auto; }
+.gauge .track { stroke: var(--grid); }
+.gauge .fill { stroke: var(--data-odra); }
+.gauge .reading {
+  position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+  font-size: clamp(44px, 9vw, 60px); font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero .text { flex: 1 1 320px; }
+.hero .kicker { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.hero .claim { font-size: 22px; line-height: 1.3; margin: 4px 0 8px; letter-spacing: -0.01em; text-wrap: balance; }
+.hero .claim b { font-variant-numeric: tabular-nums; }
+.hero .sub { color: var(--text-secondary); margin: 0; }
+
+/* ---------- Legend ---------- */
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--text-secondary); margin: 6px 0 4px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+
+/* ---------- Table ---------- */
+
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 500; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+td a { font-family: var(--font-mono); }
+/* A totals row. */
+tfoot td { font-weight: 650; border-bottom: 0; }
+
+/* ============================================================
+   Application components: pages a reader acts on, not only reads.
+   The main action of a view is blue (--brand-strong); other controls are neutral.
+   ============================================================ */
+
+[hidden] { display: none !important; }
+
+.mono { font-family: var(--font-mono); font-size: 13px; }
+
+/* A caps label for a figure, a box or a group. Tiles style their own the same way. */
+.label { color: var(--text-secondary); font-size: 12px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---------- Rows and columns ---------- */
+
+/* .toolbar: the line under the band, a notice on the left and the account controls on the right.
+   .row: a card title that shares its line with tabs or a button. */
+.toolbar, .row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.toolbar { margin-bottom: var(--gap); min-height: 38px; }
+.toolbar > div { display: flex; align-items: center; gap: 10px; }
+.toolbar .pill { margin-top: 0; padding: 3px 10px; font-size: 13px; }
+.card .row h2 { font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* .split: a narrow column for a form beside a wide one for what it produces. .stack: cards in a column. */
+.split { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.stack { display: grid; gap: var(--gap); }
+
+/* ---------- Button ---------- */
+
+/* A link that leads to the main thing of a card takes the same look: a.button. */
+button, a.button {
+  font: 500 14px/1.4 var(--font); padding: 8px 14px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius-tile);
+  background: var(--surface); color: var(--text-primary);
+}
+a.button { display: inline-block; text-decoration: none; }
+button:hover:not(:disabled), a.button:hover { border-color: var(--text-muted); }
+button:disabled { color: var(--text-muted); cursor: not-allowed; }
+button.primary, a.button.primary { background: var(--brand-strong); border-color: var(--brand-strong); color: var(--on-brand); }
+button.primary:hover:not(:disabled), a.button.primary:hover { background: var(--brand-stronger); border-color: var(--brand-stronger); }
+button.primary:disabled { background: var(--data-neutral); border-color: var(--data-neutral); color: var(--surface); }
+button.big { padding: 11px 14px; font-size: 15px; }
+button.small { padding: 4px 10px; font-size: 13px; }
+button.small.active { border-color: var(--brand-strong); background: var(--data-odra-wash); font-weight: 650; }
+
+input:focus-visible, textarea:focus-visible, button:focus-visible, a.button:focus-visible, summary:focus-visible { outline: 2px solid var(--brand-strong); outline-offset: 2px; }
+
+/* ---------- Tabs ---------- */
+
+.tabs { display: flex; gap: 4px; }
+.tab { padding: 4px 10px; font-size: 13px; color: var(--text-secondary); }
+.tab.active { border-color: var(--brand-strong); background: var(--data-odra-wash); color: var(--text-primary); }
+
+/* ---------- Form ---------- */
+
+form { display: grid; gap: 16px; }
+form.inline { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+label, legend { display: grid; gap: 5px; font-size: 14px; font-weight: 650; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; min-width: 0; }
+legend { padding: 0; margin-bottom: 8px; }
+label .hint, form > .hint { display: block; margin: 0; font-weight: 400; }
+
+input:not([type="checkbox"]), textarea {
+  width: 100%; padding: 9px 11px;
+  border: 1px solid var(--border); border-radius: var(--radius-tile);
+  background: var(--surface); color: var(--text-primary); font: 400 15px/1.4 var(--font);
+}
+input.mono, textarea.mono { font: 13px/1.6 var(--font-mono); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+/* A list, one entry per line. */
+textarea { display: block; min-height: 150px; resize: vertical; }
+
+label.check { grid-template-columns: auto 1fr; align-items: start; gap: 10px; }
+label.check input { width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--brand-strong); }
+
+/* A field with its unit inside, on the right. */
+.with-unit { position: relative; display: block; }
+.with-unit input { padding-right: 64px; font-variant-numeric: tabular-nums; }
+.with-unit .unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; pointer-events: none; }
+
+/* Quick choices that fill other fields. */
+.options { display: flex; flex-wrap: wrap; gap: 6px; }
+
+summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; width: fit-content; }
+details[open] > summary { margin-bottom: 10px; }
+
+/* ---------- Callout: what an action will do, in a sentence ---------- */
+
+.callout { border: 1px solid var(--border); border-radius: var(--radius-tile); padding: 12px; }
+.callout p { margin: 2px 0 0; }
+
+/* ---------- Steps ---------- */
+
+.steps { margin-bottom: var(--gap); }
+.steps .tiles { list-style: none; margin: 0; padding: 0; }
+.steps .label { display: flex; align-items: center; gap: 8px; }
+.steps h3 { font-size: 15px; margin: 8px 0 2px; }
+.steps .sub { margin: 0; }
+.steps .sub b { color: var(--text-primary); }
+.steps button { margin-top: 10px; }
+.num {
+  width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--border); color: var(--text-primary); font-weight: 650; letter-spacing: 0;
+}
+.tile.done .num { background: var(--data-odra); border-color: var(--data-odra); color: transparent; position: relative; }
+.tile.done .num::after {
+  content: ""; position: absolute; width: 8px; height: 4px;
+  border-left: 2px solid var(--on-brand); border-bottom: 2px solid var(--on-brand);
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+/* ---------- List of items ---------- */
+
+.list { display: grid; gap: 12px; margin-top: 16px; }
+.list:empty { margin-top: 0; }
+.empty { color: var(--text-secondary); margin: 0; }
+
+/* An item of a list inside a card: its figure, where it comes from, its state. */
+.item { border: 1px solid var(--border); border-radius: var(--radius-tile); padding: 16px; display: grid; gap: 14px; }
+.item .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.item .title { font-size: 22px; line-height: 1.3; letter-spacing: -0.01em; font-weight: 650; font-variant-numeric: tabular-nums; }
+.item .from { color: var(--text-secondary); font-size: 13px; }
+.item .tiles { margin: 0; }
+.item .tile .label { display: flex; align-items: center; gap: 6px; }
+.item .tile .value { font-size: 22px; overflow-wrap: anywhere; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- Chip: the state of an item ---------- */
+
+.chip { padding: 1px 8px; border: 1px solid var(--border); border-radius: var(--radius-pill); color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+.chip.good { border-color: var(--text-primary); color: var(--text-primary); }
+.chip.warn { border-color: transparent; background: var(--warn-bg); color: var(--warn-text); }
+
+/* ---------- Progress ---------- */
+
+/* Two fills on one track: .fill is the part that is done, .fill.soft reaches as far as what is
+   done or ready. .mark is a moment on the way. .ticks label the ends and the middle. */
+.progress { position: relative; height: 14px; border-radius: 3px; background: var(--grid); }
+.progress .fill { position: absolute; inset: 0 auto 0 0; max-width: 100%; border-radius: 3px; background: var(--data-odra); }
+.progress .fill.soft { background: var(--data-odra-soft); }
+.progress .mark { position: absolute; top: -4px; bottom: -4px; width: 1px; background: var(--text-muted); }
+.timeline { display: grid; gap: 6px; }
+.ticks { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.ticks span:last-child { text-align: right; }
+.ticks b { display: block; color: var(--text-secondary); font-size: 12px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* The square that ties a label to a colour of the progress bar, as `i` does in a legend. */
+.dot { flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--data-odra); }
+.dot.soft { background: var(--data-odra-soft); }
+.dot.rest { background: var(--grid); }
+
+/* ---------- Line diagram ---------- */
+
+.diagram { flex: 0 1 400px; min-width: 260px; margin: 0 auto; }
+.diagram svg { display: block; width: 100%; height: auto; }
+.diagram text { font-size: 12px; fill: var(--text-muted); }
+.diagram .axis { fill: none; stroke: var(--border); stroke-width: 1.5; }
+.diagram .guide { fill: none; stroke: var(--grid); stroke-width: 1; }
+.diagram .area { fill: var(--data-odra-wash); }
+.diagram .curve { fill: none; stroke: var(--data-odra); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.diagram .point { fill: var(--surface); stroke: var(--data-odra); stroke-width: 2.5; }
+.diagram figcaption { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.hero .sub b { color: var(--text-primary); }
+.hero .points { margin: 12px 0 0; padding-left: 18px; color: var(--text-secondary); display: grid; gap: 2px; }
+
+/* ---------- Facts ---------- */
+
+dl.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; margin: 10px 0 0; font-size: 13px; }
+dl.facts dt { color: var(--text-secondary); }
+dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---------- Notice and toast ---------- */
+
+.notice { border-radius: var(--radius-tile); padding: 10px 12px; margin: 0; background: var(--warn-bg); color: var(--warn-text); }
+
+/* The progress of something the reader started, fixed to the bottom of the window. */
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  width: min(600px, calc(100vw - 2 * var(--gutter)));
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--text-primary); border-radius: var(--radius-card);
+}
+.toast.error { background: var(--warn-bg); border-color: var(--warn-text); color: var(--warn-text); }
+.toast > span { flex: 1; overflow-wrap: anywhere; }
+.toast a { white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .split, .steps .tiles { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .tile .value { font-size: 22px; }
+  .tile { padding: 10px 8px; }
+  .item .tiles { grid-template-columns: minmax(0, 1fr); }
+}
