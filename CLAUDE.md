@@ -106,6 +106,10 @@ served at https://odra.dev/odra-demos/.
   (`base: "./"` in `vite.config.ts`, `./assets/...` in `index.html`) and nothing is fetched from
   the root of the host.
 - Each app's footer links back to the list with `<a href="../">`.
+- CSPR.click accepts an app id only from the domains registered for it. The apps use the id
+  registered for odra.dev when served from there and `csprclick-template` on localhost; copy the
+  `clickSDKOptions` block of `vesting/web/index.html` as it is. With the wrong id the SDK fails
+  at start (`e.menu_items is undefined`) and the wallet cannot connect.
 - Check the result as Pages will serve it: `node site/build.mjs`, serve the parent of `_site/`
   so the site sits under a path, and open an app through the list.
 

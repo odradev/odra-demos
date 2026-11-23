@@ -10,7 +10,11 @@
       const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
       const clickSDKOptions = {
         appName: "Casper Liquidity Locker",
-        appId: "csprclick-template",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
         providers: ["casper-wallet", "ledger"],
       };
     </script>
