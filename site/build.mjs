@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const out = join(root, "_site");
 const flags = new Set(process.argv.slice(2));
-const REPOSITORY = "https://github.com/odradev/casperspam";
+const REPOSITORY = "https://github.com/odradev/odra-demos";
 const EXPLORER = "https://testnet.cspr.live";
 
 const projects = JSON.parse(readFileSync(join(root, "site/projects.json"), "utf8")).sort(

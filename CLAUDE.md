@@ -1,6 +1,6 @@
-# casperspam
+# odra-demos
 
-One small Odra smart contract project per day, each in its own directory. `vesting/` is the
+Demos of Odra smart contracts for Casper, each in its own directory with a web app. `vesting/` is the
 reference for how a project is laid out; copy its structure for a new one.
 
 ## Project layout
