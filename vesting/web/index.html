@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Token Vesting on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Token Vesting",
+        appId: "csprclick-template",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Token Vesting</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Unlocked tokens over time: none before the cliff, a jump at the cliff, then a straight line up
+                to the full amount at the end.
+              </title>
+              <path class="area" d="M130 170 L130 128 L300 40 L340 40 L340 170 Z" />
+              <path class="axis" d="M40 20 V170 H340" />
+              <path class="guide" d="M130 170 V128 M300 170 V40 M40 40 H300" />
+              <path class="curve" d="M40 170 H130 V128 L300 40 H340" />
+              <circle class="point" cx="40" cy="170" r="4" />
+              <circle class="point" cx="130" cy="128" r="4" />
+              <circle class="point" cx="300" cy="40" r="4" />
+              <text x="40" y="190" text-anchor="middle">Start</text>
+              <text x="130" y="190" text-anchor="middle">Cliff</text>
+              <text x="300" y="190" text-anchor="middle">End</text>
+              <text x="28" y="44" text-anchor="end">All</text>
+              <text x="28" y="174" text-anchor="end">0</text>
+              <text x="85" y="160" text-anchor="middle">nothing yet</text>
+              <text x="236" y="140" text-anchor="middle">unlocked</text>
+            </svg>
+            <figcaption>How much the recipient can claim as time passes.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What vesting is</div>
+            <p class="claim">Pay tokens out gradually, not all at once</p>
+            <p class="sub">
+              Vesting locks tokens for a teammate, an investor or a contributor and unlocks them a little at a
+              time. They wait through an opening period, the <b>cliff</b>, and after it their tokens unlock
+              steadily until the end date.
+            </p>
+            <ul class="points">
+              <li>The locked tokens sit in a smart contract, out of reach of both sides.</li>
+              <li>The recipient claims what has unlocked whenever they like.</li>
+              <li>If you choose so, you can stop a schedule and take back what has not unlocked yet.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for this demo. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-create" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Lock some and watch them unlock</h3>
+              <p class="sub">
+                Fill in the form below with yourself as the recipient and the 10 minute schedule, then claim
+                as the tokens unlock.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Lock tokens for someone</h2>
+            <div class="asof">The tokens leave your wallet now and reach the recipient over time.</div>
+            <form id="create">
+              <label>
+                Who receives them
+                <input id="f-beneficiary" class="mono" placeholder="Public key or account-hash-…" required />
+                <span class="hint"
+                  >Their Casper public key. Yours is filled in so you can try it on yourself.</span
+                >
+              </label>
+
+              <label>
+                How many
+                <span class="with-unit">
+                  <input id="f-amount" inputmode="decimal" placeholder="100" required />
+                  <span id="f-amount-symbol" class="unit">TEST</span>
+                </span>
+              </label>
+
+              <details>
+                <summary>Use another token</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" required />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <fieldset>
+                <legend>Over what time</legend>
+                <div class="options">
+                  <button type="button" class="small" data-preset="10m">10 minutes</button>
+                  <button type="button" class="small" data-preset="1h">1 hour</button>
+                  <button type="button" class="small" data-preset="1y">1 year</button>
+                  <button type="button" class="small" data-preset="4y">4 years</button>
+                </div>
+                <label>
+                  Start
+                  <input id="f-start" type="datetime-local" step="1" required />
+                  <span class="hint">Unlocking is counted from this moment.</span>
+                </label>
+                <label>
+                  Cliff
+                  <input id="f-cliff" type="datetime-local" step="1" required />
+                  <span class="hint">Nothing can be claimed before this moment.</span>
+                </label>
+                <label>
+                  End
+                  <input id="f-end" type="datetime-local" step="1" required />
+                  <span class="hint">Everything is unlocked from this moment on.</span>
+                </label>
+              </fieldset>
+
+              <label class="check">
+                <input id="f-revocable" type="checkbox" checked />
+                <span>
+                  I can stop this schedule
+                  <span class="hint"
+                    >You get back what has not unlocked. What has unlocked stays theirs.</span
+                  >
+                </span>
+              </label>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Lock tokens</button>
+              <p class="hint">
+                Your wallet will ask twice: first to let the contract take the tokens, then to create the
+                schedule.
+              </p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section class="card">
+              <div class="row">
+                <h2>Your schedules</h2>
+                <div class="tabs" role="tablist">
+                  <button id="tab-receiving" role="tab" class="tab active">Coming to me</button>
+                  <button id="tab-created" role="tab" class="tab">Locked by me</button>
+                </div>
+              </div>
+              <div id="schedules" class="list">
+                <p class="empty">Connect a wallet to see your schedules.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Look at any schedule</h2>
+              <div class="asof">Every schedule has a number and is public. No wallet needed.</div>
+              <form id="lookup" class="inline">
+                <input id="lookup-id" inputmode="numeric" placeholder="Schedule number, e.g. 0" required />
+                <button>Show</button>
+              </form>
+              <div id="lookup-result" class="list"></div>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

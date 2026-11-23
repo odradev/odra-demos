@@ -1,0 +1,491 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Vesting",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Schedule",
+        "description": null,
+        "members": [
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "beneficiary",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "total",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "released",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "cliff",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "revocable",
+            "description": null,
+            "ty": "Bool"
+          },
+          {
+            "name": "revoked",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "ScheduleCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "schedule_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "beneficiary",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "cliff",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "revocable",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "ScheduleRevoked",
+        "description": null,
+        "members": [
+          {
+            "name": "schedule_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "refunded",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "TokensReleased",
+        "description": null,
+        "members": [
+          {
+            "name": "schedule_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "beneficiary",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyRevoked",
+      "description": "The schedule has been revoked already.",
+      "discriminant": 8
+    },
+    {
+      "name": "AmountTooLarge",
+      "description": "The amount is too large to compute a vested share of.",
+      "discriminant": 3
+    },
+    {
+      "name": "InvalidTimes",
+      "description": "The times do not satisfy `start <= cliff <= end` and `start < end`.",
+      "discriminant": 2
+    },
+    {
+      "name": "NotCreator",
+      "description": "Only the creator of the schedule may do this.",
+      "discriminant": 6
+    },
+    {
+      "name": "NotRevocable",
+      "description": "The schedule was created as not revocable.",
+      "discriminant": 7
+    },
+    {
+      "name": "NothingToRelease",
+      "description": "There is nothing to release at the moment.",
+      "discriminant": 5
+    },
+    {
+      "name": "ScheduleNotFound",
+      "description": "No schedule has this id.",
+      "discriminant": 4
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The amount to vest is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_schedule",
+      "description": "Creates a schedule and pulls `amount` of `token` from the caller, who must have approved this contract for at least that amount. The id of the schedule is the value `schedules_count` returned before the call; the `ScheduleCreated` event carries it. Nothing is vested before `cliff`. Between `cliff` and `end` the vested amount grows linearly, counted from `start`. From `end` on everything is vested. The times are in milliseconds since the Unix epoch and must satisfy `start <= cliff <= end`, `start < end`.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "beneficiary",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "start",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "cliff",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "end",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "revocable",
+          "description": null,
+          "ty": "Bool",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "release",
+      "description": "Pays out everything that has vested and was not paid out yet to the beneficiary. Anyone may call it; the tokens always go to the beneficiary.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schedule_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "revoke",
+      "description": "Stops a revocable schedule: the unvested tokens go back to the creator, and what has vested so far stays for the beneficiary to release. Only the creator may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schedule_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schedule",
+      "description": "Returns the schedule with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schedule_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Schedule",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "vested",
+      "description": "Returns the amount vested so far, including what was already released.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schedule_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "releasable",
+      "description": "Returns the amount `release` would pay out now.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schedule_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schedules_count",
+      "description": "Returns the number of schedules created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schedules_of_beneficiary",
+      "description": "Returns the ids of the schedules `beneficiary` receives tokens from.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "beneficiary",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schedules_of_creator",
+      "description": "Returns the ids of the schedules `creator` created.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "creator",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "ScheduleCreated",
+      "ty": "ScheduleCreated"
+    },
+    {
+      "name": "ScheduleRevoked",
+      "ty": "ScheduleRevoked"
+    },
+    {
+      "name": "TokensReleased",
+      "ty": "TokensReleased"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Vesting.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "schedules",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Schedule"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_beneficiary",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_creator",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      }
+    ]
+  }
+}
