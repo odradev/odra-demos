@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airdrop on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Airdrop",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Airdrop</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Eight lines of a list at the bottom are combined in pairs, level by level, into one
+                fingerprint at the top. One line's way up is highlighted: it needs only the three partners
+                along it.
+              </title>
+              <path
+                class="guide"
+                d="M40 160 L60 115 L80 160 M120 160 L140 115 L160 160 M200 160 L220 115 L240 160 M280 160 L300 115 L320 160 M60 115 L100 70 L140 115 M220 115 L260 70 L300 115 M100 70 L180 30 L260 70"
+              />
+              <path class="curve" d="M200 160 L220 115 L260 70 L180 30" />
+              <circle class="point" cx="180" cy="30" r="7" />
+              <circle class="point" cx="100" cy="70" r="4" />
+              <circle class="point" cx="260" cy="70" r="4" />
+              <circle class="point" cx="60" cy="115" r="4" />
+              <circle class="point" cx="140" cy="115" r="4" />
+              <circle class="point" cx="220" cy="115" r="4" />
+              <circle class="point" cx="300" cy="115" r="4" />
+              <circle class="point" cx="40" cy="160" r="4" />
+              <circle class="point" cx="80" cy="160" r="4" />
+              <circle class="point" cx="120" cy="160" r="4" />
+              <circle class="point" cx="160" cy="160" r="4" />
+              <circle class="point" cx="200" cy="160" r="6" />
+              <circle class="point" cx="240" cy="160" r="4" />
+              <circle class="point" cx="280" cy="160" r="4" />
+              <circle class="point" cx="320" cy="160" r="4" />
+              <text x="196" y="34">Fingerprint, on chain</text>
+              <text x="180" y="186" text-anchor="middle">The list, one line per recipient</text>
+              <text x="200" y="146" text-anchor="middle">you</text>
+            </svg>
+            <figcaption>
+              Only the fingerprint is stored. Your line and its partners prove you are on the list.
+            </figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What an airdrop is</div>
+            <p class="claim">Give tokens to a long list of people, and let each of them claim their own</p>
+            <p class="sub">
+              You put the tokens for the whole list into the contract in one transaction. The list itself
+              stays off the chain: the contract keeps only its fingerprint, a <b>Merkle root</b>, 32 bytes
+              worked out from every line, so that changing any line changes it. Each recipient shows their
+              line and the few pieces that connect it to the fingerprint, and receives their amount.
+            </p>
+            <ul class="points">
+              <li>One transaction for you, whether the list has three names or thousands.</li>
+              <li>
+                Each recipient pays the fee of their own claim, about 1.5 CSPR, and can claim only once.
+              </li>
+              <li>Set a deadline, and after it you can take back what nobody claimed.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-drop" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Drop tokens to a list with you on it, then claim yours</h3>
+              <p class="sub">The example puts you and two made-up accounts on the list.</p>
+              <button id="example">Fill in an example</button>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Create a drop</h2>
+            <div class="asof">The tokens leave your wallet now; each recipient claims their part.</div>
+            <form id="create">
+              <details id="token-field">
+                <summary>Drop another token than TEST</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <label>
+                Recipients and amounts
+                <textarea
+                  id="f-list"
+                  class="mono"
+                  spellcheck="false"
+                  placeholder="One per line: address, amount&#10;0203…0105, 25&#10;account-hash-2ccb…11c1, 10.5"
+                ></textarea>
+                <span class="hint">
+                  A public key or an account hash, then the amount in <span id="unit-hint">TEST</span>.
+                  Commas, spaces and tabs all work, so a spreadsheet column pair pastes as it is.
+                </span>
+              </label>
+
+              <fieldset>
+                <legend>When claims close</legend>
+                <div class="options">
+                  <button type="button" class="small" data-deadline="none">Never</button>
+                  <button type="button" class="small" data-deadline="1h">In an hour</button>
+                  <button type="button" class="small" data-deadline="1w">In a week</button>
+                  <button type="button" class="small" data-deadline="30d">In 30 days</button>
+                </div>
+                <label>
+                  Deadline
+                  <input id="f-deadline" type="datetime-local" step="1" />
+                  <span class="hint">
+                    After it nobody can claim, and you can take back what is left. With no deadline the tokens
+                    wait for their recipients for ever.
+                  </span>
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Create the drop</button>
+              <p id="create-hint" class="hint"></p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section id="share" class="card" hidden>
+              <h2>Share the list</h2>
+              <div class="asof">Recipients need the list to claim. The chain has only its fingerprint.</div>
+              <p id="share-text"></p>
+              <label id="share-link-field">
+                Claim link
+                <input id="share-link" class="mono" readonly />
+              </label>
+              <div class="actions">
+                <button id="share-copy" type="button">Copy the link</button>
+                <a id="share-file" class="button">Download the list</a>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>The list as it will be dropped</h2>
+              <div class="asof">Check every row before you sign. A transaction cannot be taken back.</div>
+              <div id="preview"><p class="empty">Nothing yet. Paste a list on the left.</p></div>
+            </section>
+          </div>
+        </div>
+
+        <div class="split later">
+          <section class="card">
+            <h2>Claim your tokens</h2>
+            <div class="asof">Opened from a claim link, this is filled in already.</div>
+            <form id="claim">
+              <label>
+                Drop number
+                <input id="c-drop" inputmode="numeric" placeholder="e.g. 0" />
+              </label>
+              <label>
+                The list of the drop
+                <textarea
+                  id="c-list"
+                  class="mono"
+                  spellcheck="false"
+                  placeholder="Paste the list you were sent, exactly as it is"
+                ></textarea>
+              </label>
+              <label>
+                Or open the file you were sent
+                <input id="c-file" type="file" accept=".txt,text/plain" />
+              </label>
+
+              <div class="callout">
+                <div class="label">Your part</div>
+                <p id="claim-summary"></p>
+              </div>
+
+              <p id="claim-error" class="notice" hidden></p>
+              <button id="claim-submit" class="primary big" disabled>Claim</button>
+              <p class="hint">
+                The page works out your proof from the list in your browser. The network takes up to 2.5 CSPR
+                as a fee for the claim and refunds most of what is not used.
+              </p>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>The drop</h2>
+            <div class="asof">Every drop has a number and is public. No wallet needed.</div>
+            <div id="drop" class="list"><p class="empty">Enter a drop number to see it.</p></div>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "last_updated": "2026-11-23T13:03:47Z",
+  "contracts": [
+    {
+      "name": "TestToken",
+      "package_hash": "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+    },
+    {
+      "name": "Airdrop",
+      "package_hash": "hash-6957d11fd45dbd688eb8a3221dd4507921e76e2aef7f4b5be22da96fc2ebdcf4"
+    }
+  ]
+}

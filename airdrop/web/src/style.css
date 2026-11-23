@@ -1,0 +1,36 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The second row of cards: claiming, under creating. */
+.split.later {
+  margin-top: var(--gap);
+}
+
+/* The figures of the list above its table. */
+#preview dl.facts {
+  margin: 0 0 16px;
+}
+
+/* The share card holds text, a field and buttons outside a form. */
+#share {
+  display: grid;
+  gap: 12px;
+}
+
+#share > h2,
+#share > .asof,
+#share > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}

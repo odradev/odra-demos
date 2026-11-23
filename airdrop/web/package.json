@@ -1,0 +1,23 @@
+{
+  "name": "airdrop-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "contracts": "node scripts/contracts.mjs",
+    "reader": "wasm-pack build --target web --out-dir pkg-web ../storage_reader",
+    "vector": "node scripts/vector.ts",
+    "dev": "vite",
+    "build": "tsc --noEmit && node scripts/vector.ts --check && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.0.1",
+    "airdrop-storage-reader": "file:../storage_reader/pkg-web",
+    "airdrop-wasm-client": "file:../airdrop_client/pkg-web"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0"
+  }
+}

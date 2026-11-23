@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "airdrop::Airdrop"
+
+[[contracts]]
+fqn = "token::TestToken"

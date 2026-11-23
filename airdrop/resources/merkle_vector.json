@@ -1,0 +1,54 @@
+{
+  "about": "Written by `npm run vector` in web/ from src/merkle.ts; checked by the tests of src/merkle.rs.",
+  "list": [
+    {
+      "address": "account-hash-2ccbc1dd4b1d1e7a3bc8c9cbbd2d1dd4fc4ef8b84ea6c1b4ea72a41f1e9c11c1",
+      "amount": "25000000000",
+      "leaf": "40317d8270ac47f117b73929f6332ce986ae1959878bcf92815bf66874834bbe",
+      "proof": [
+        "ed0655d793ea1939398d9aab15b900c836249876887a68dff1e46b8c31cb6fc8",
+        "306251dd699daa7f8e1dd67fe9381e1d8183ac3ddc8c4367d1d470b36090c924",
+        "8ca462d8187a4a0866a7adb333c2961f1b929f754c9d4f71db16a37201171e43"
+      ]
+    },
+    {
+      "address": "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4",
+      "amount": "1",
+      "leaf": "ed0655d793ea1939398d9aab15b900c836249876887a68dff1e46b8c31cb6fc8",
+      "proof": [
+        "40317d8270ac47f117b73929f6332ce986ae1959878bcf92815bf66874834bbe",
+        "306251dd699daa7f8e1dd67fe9381e1d8183ac3ddc8c4367d1d470b36090c924",
+        "8ca462d8187a4a0866a7adb333c2961f1b929f754c9d4f71db16a37201171e43"
+      ]
+    },
+    {
+      "address": "account-hash-0000000000000000000000000000000000000000000000000000000000000000",
+      "amount": "10500000000",
+      "leaf": "00441af10929dbe96da035fba4fe847dc8cf0f41ebe759365067eb580f41c403",
+      "proof": [
+        "8a434868f1a3bde1cc9f6b46f33b274e49179c51a0ba2f727d80cea03f3550bb",
+        "93bd7fc5398a6b54e3e11e122597128350abac44a67c83c3c43d95d097544d56",
+        "8ca462d8187a4a0866a7adb333c2961f1b929f754c9d4f71db16a37201171e43"
+      ]
+    },
+    {
+      "address": "account-hash-ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "amount": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+      "leaf": "8a434868f1a3bde1cc9f6b46f33b274e49179c51a0ba2f727d80cea03f3550bb",
+      "proof": [
+        "00441af10929dbe96da035fba4fe847dc8cf0f41ebe759365067eb580f41c403",
+        "93bd7fc5398a6b54e3e11e122597128350abac44a67c83c3c43d95d097544d56",
+        "8ca462d8187a4a0866a7adb333c2961f1b929f754c9d4f71db16a37201171e43"
+      ]
+    },
+    {
+      "address": "account-hash-a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+      "amount": "4000000000",
+      "leaf": "8ca462d8187a4a0866a7adb333c2961f1b929f754c9d4f71db16a37201171e43",
+      "proof": [
+        "b9652e332d7041c1010ae8c68026f5f55d5af02555172f20468852019e93935a"
+      ]
+    }
+  ],
+  "root": "48c582bc9fd0b946ffd199706035c356af95d6fa0b70e6b3cf797520b4c1c392"
+}
