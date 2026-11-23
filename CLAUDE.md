@@ -116,7 +116,8 @@ served at https://odra.dev/odra-demos/.
 - Apps are served from a subdirectory (`/<project>/`), so every path in an app is relative
   (`base: "./"` in `vite.config.ts`, `./assets/...` in `index.html`) and nothing is fetched from
   the root of the host.
-- Each app's footer links back to the list with `<a href="../">`.
+- Each app links back to the list twice with `<a href="../">`: the logo in the header band and
+  "All the demos" in the footer.
 - CSPR.click accepts an app id only from the domains registered for it. The apps use the id
   registered for odra.dev when served from there and `csprclick-template` on localhost; copy the
   `clickSDKOptions` block of `vesting/web/index.html` as it is. With the wrong id the SDK fails

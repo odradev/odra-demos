@@ -64,6 +64,9 @@ a { color: var(--text-primary); }
   display: flex; align-items: center; gap: 16px;
 }
 .band img { display: block; height: 32px; width: auto; }
+/* The logo may be a link to the page's home. */
+.band a { display: block; border-radius: 4px; }
+.band a:focus-visible { outline: 2px solid var(--on-brand); outline-offset: 4px; }
 .band .sep { width: 1px; height: 28px; background: rgb(255 255 255 / 0.5); }
 .band h1 { font-size: 23px; font-weight: 650; line-height: 1; margin: 0; letter-spacing: -0.01em; }
 
