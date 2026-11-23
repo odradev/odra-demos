@@ -1,0 +1,18 @@
+[
+  {
+    "order": 1,
+    "slug": "vesting",
+    "name": "Token vesting",
+    "claim": "Pay tokens out gradually, not all at once",
+    "summary": "Lock CEP-18 tokens for a teammate, an investor or a contributor. They unlock a little at a time after a cliff, and the recipient claims what has unlocked.",
+    "contract": "hash-8276541bdd93b4673be019b88a21624d93d2a61acb6acc8069a36e2e34fd54e4"
+  },
+  {
+    "order": 2,
+    "slug": "multisend",
+    "name": "Multisend",
+    "claim": "Pay many accounts with one signature",
+    "summary": "Paste a list of recipients and amounts and send CSPR or a CEP-18 token to all of them in one transaction: everyone is paid, or nobody is.",
+    "contract": "hash-52e9f322a88e0b3455113bb56ddffd52035cccfc97d13e76551f30a9d141f2e5"
+  }
+]

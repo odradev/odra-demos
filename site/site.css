@@ -1,0 +1,50 @@
+/* What is particular to the page that lists the apps. The look comes from the shared Odra style,
+   ../style/odra.css. */
+
+/* The headline figure: how many demos there are. It takes the place of the gauge. */
+.count {
+  flex: 0 0 auto;
+  min-width: 150px;
+  text-align: center;
+}
+
+.count .reading {
+  font-size: clamp(56px, 10vw, 76px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--data-odra);
+}
+
+.count .label {
+  margin-top: 6px;
+}
+
+/* A card of an app: what it is for, then the way in. */
+.app {
+  display: flex;
+  flex-direction: column;
+}
+
+.app .claim {
+  font-size: 22px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 14px 0 8px;
+  text-wrap: balance;
+}
+
+.app .summary {
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.app .actions {
+  align-items: center;
+}
+
+.app .actions a:not(.button) {
+  font-size: 13px;
+}

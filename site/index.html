@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odra demos on Casper</title>
+    <meta
+      name="description"
+      content="Smart contracts for Casper written in Odra, each with a web app to try on the testnet."
+    />
+    <link rel="icon" href="./assets/favicon.png" />
+    <link rel="stylesheet" href="./odra.css" />
+    <link rel="stylesheet" href="./site.css" />
+  </head>
+  <body>
+    <header class="band">
+      <div class="inner">
+        <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+        <span class="sep"></span>
+        <h1>Demos</h1>
+      </div>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <span class="pill">Demos on the Casper testnet</span>
+        <div><a class="button" href="{{repository}}">Source on GitHub</a></div>
+      </div>
+
+      <section class="hero">
+        <div class="count">
+          <div class="reading">{{count}}</div>
+          <div class="label">{{count-label}}</div>
+        </div>
+        <div class="text">
+          <div class="kicker">Odra demos</div>
+          <p class="claim">Smart contracts for Casper you can try in the browser</p>
+          <p class="sub">
+            Each demo is a contract written in <a href="https://odra.dev">Odra</a>, deployed on the
+            Casper testnet, with a web app in front of it. Connect a testnet wallet and use it; the
+            source of the contract and of the app is one click away.
+          </p>
+        </div>
+      </section>
+
+      <div class="cards">
+        {{cards}}
+      </div>
+
+      <footer>
+        <p>
+          Built with <a href="https://odra.dev">Odra</a>. The contracts are examples and are not audited;
+          the apps run on the Casper testnet, where nothing costs real money.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

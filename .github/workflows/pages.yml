@@ -1,0 +1,70 @@
+# Builds the site that lists every app (site/build.mjs) and publishes it to GitHub Pages.
+# In the repository settings, Pages must be set to deploy from "GitHub Actions".
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push replaces a build that has not started deploying.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # The Rust toolchain is pinned by each project's rust-toolchain.toml; rustup installs it on
+      # first use. The cache holds the tools installed below and the shared target directory.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: pages-${{ runner.os }}-${{ hashFiles('*/rust-toolchain.toml', '*/Cargo.toml') }}
+          restore-keys: pages-${{ runner.os }}-
+
+      - name: Install cargo-odra and wasm-pack
+        run: |
+          command -v cargo-odra || cargo install cargo-odra --locked
+          command -v wasm-pack || cargo install wasm-pack --locked
+
+      - name: Add the wasm target to the pinned toolchain
+        run: |
+          for project in */rust-toolchain.toml; do
+            (cd "$(dirname "$project")" && rustup target add wasm32-unknown-unknown)
+          done
+
+      - name: Build the site
+        run: node site/build.mjs --packages
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
