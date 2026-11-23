@@ -36,7 +36,17 @@ reference for how a project is laid out; copy its structure for a new one.
   Measure the wasm files that will be deployed: `cargo odra build` and `cargo odra test -b casper`
   can produce files of different sizes.
 - Agents working in parallel share one key, so a balance before and after says nothing about one
-  project. Take costs per transaction from `info_get_transaction` (`cost` minus `refund`).
+  project. Take costs per transaction from `info_get_transaction` (`cost` minus `refund`). They
+  share the scratchpad directory too: each agent keeps its files in a subdirectory of its own.
+- To measure: end a test with `println!("{}", env.gas_report())` and run
+  `cargo odra test -b casper -s <test> -- --nocapture` after `cargo odra build` (`-s` keeps the
+  built wasm). Deploy gas grows with the wasm: 281 to 312 CSPR for the contracts here.
+- Keep the demo scenario in a host-only module (`#[cfg(not(target_arch = "wasm32"))] pub mod demo`)
+  that both the CLI and a CasperVM test call, so the sequence sent to the testnet is the proven one.
+- To reuse a contract that is already deployed, load it with `container.contract_ref` in the deploy
+  script: unlike `load_or_deploy` it fails instead of deploying a copy when the entry is missing.
+- Errors of every contract called in one transaction share one number space. A contract that
+  calls another gives its own errors a range of their own (the governor starts at 200).
 
 ## Web apps: read state with odra-storage-reader
 
@@ -59,7 +69,8 @@ a node that serves speculative execution.
   storage so the app can read what it shows: keep lists of ids per account rather than values that
   need a call to assemble.
 - The generated wasm client is for sending transactions only. Generate it without
-  `WASM_CLIENT_SK`.
+  `WASM_CLIENT_SK`: run `env -u WASM_CLIENT_SK cargo odra generate-client`, because a key that is
+  set in the shell is compiled into the client's wasm. `site/build.mjs` unsets it for its builds.
 - Browsers cannot call public nodes (no CORS). Use `https://testnet-rpc.odra.dev` or
   `https://mainnet-rpc.odra.dev`.
 - A view of odra-cli runs locally with the time of the last block, so its result can differ from
@@ -119,6 +130,8 @@ served at https://odra.dev/odra-demos/.
   create a fresh object for each call.
 - `Address.value` prints `entity-account-…` or `contract-package-…`, which `new Address()` cannot
   parse. Convert to `account-hash-…` or `hash-…` first (`key()` in `vesting/web/src/main.ts`).
+  `Address::to_formatted_string` in Rust prints the same unreadable form; use
+  `Key::from(address).to_formatted_string()` for text a page or a person will paste back.
 
 ## Checks before calling a project done
 

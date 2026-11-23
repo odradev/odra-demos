@@ -163,6 +163,8 @@ tfoot td { font-weight: 650; border-bottom: 0; }
 /* .split: a narrow column for a form beside a wide one for what it produces. .stack: cards in a column. */
 .split { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: var(--gap); align-items: start; }
 .stack { display: grid; gap: var(--gap); }
+/* Two rows of split columns keep the gap of the cards between them. */
+.split + .split { margin-top: var(--gap); }
 
 /* ---------- Button ---------- */
 

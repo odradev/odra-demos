@@ -13,6 +13,11 @@ Each demo is something the Casper ecosystem was missing: a token tool, a DeFi bu
 | [Payment streaming](streaming/) | Pays a recipient continuously from a deposit of CEP-18 tokens; the recipient withdraws what has accrued, the sender can stop the stream. Comes with a web app. |
 | [Liquidity locker](locker/) | Locks CEP-18 tokens until a date that can only move later, and shows anyone what is locked for a token. Comes with a web app. |
 | [Timelock](timelock/) | Holds admin rights over other contracts and executes each operation only after a public delay. Comes with a web app. |
+| [Escrow](escrow/) | Holds a buyer's CEP-18 tokens until the buyer releases them, the seller refunds them, or an arbiter decides a dispute. Comes with a web app. |
+| [Payment splitter](splitter/) | Divides CEP-18 tokens paid into a split among payees by fixed shares; each payee withdraws their part. Comes with a web app. |
+| [Crowdfunding](crowdfunding/) | Campaigns with a goal and a deadline: the creator claims if the goal is met, backers take their pledges back if not. Comes with a web app. |
+| [Airdrop](airdrop/) | Funds a list of recipients under one Merkle root; each recipient claims their own amount with a proof. Comes with a web app. |
+| [Governor](governor/) | Token holders vote on a change; one that passes is queued in the timelock and executed after its delay. Comes with a web app. |
 
 ## Layout
 

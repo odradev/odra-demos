@@ -38,5 +38,45 @@
     "claim": "Every change is announced before it happens",
     "summary": "A timelock holds the admin keys of other contracts and runs each change only after a public delay, so users see what is coming and have time to leave. Propose a new fee for a contract the timelock owns, watch it wait, then execute it.",
     "contract": "hash-49a1c722fe262dd39ca052ac88fabf0e221c5a1726bace7a90b944a1e2c1feef"
+  },
+  {
+    "order": 6,
+    "slug": "escrow",
+    "name": "Escrow",
+    "claim": "Pay a stranger only once the deal is done",
+    "summary": "A buyer's CEP-18 tokens wait in a contract until the buyer releases them to the seller or the seller sends them back. If they disagree, either opens a dispute and an arbiter they both chose decides who gets the tokens, or splits them.",
+    "contract": "hash-afb4d38b6d308288ecc22517fcaba68be5571a56076cede2141ffa867e435d43"
+  },
+  {
+    "order": 7,
+    "slug": "splitter",
+    "name": "Payment splitter",
+    "claim": "Share every payment by fixed parts",
+    "summary": "List payees and their shares once; anyone can then pay CEP-18 tokens into the split, and each payee withdraws their part when they like. The page shows how a payment will be divided before you send it.",
+    "contract": "hash-f6d09da244b84973445c8005376dc95d91cdd0ebd080257135a0ce06cac1d4f2"
+  },
+  {
+    "order": 8,
+    "slug": "crowdfunding",
+    "name": "Crowdfunding",
+    "claim": "Raise tokens for an idea, all or nothing",
+    "summary": "Anyone starts a campaign with a CEP-18 token, a goal and a deadline, and backers pledge tokens to it until the deadline. If the pledges reach the goal, the creator claims all of them; if not, every backer takes their pledge back.",
+    "contract": "hash-c300ec089a732b92504b38b646450f5efa05341cfe3ddf6308a391e5d3571f34"
+  },
+  {
+    "order": 9,
+    "slug": "airdrop",
+    "name": "Airdrop",
+    "claim": "Give tokens to a long list of people, and let each of them claim their own",
+    "summary": "Put the tokens for a whole list into the contract in one transaction; only a 32-byte fingerprint of the list goes on chain. Each recipient opens the shared list, the page works out their proof, and they claim their amount, paying their own fee.",
+    "contract": "hash-6957d11fd45dbd688eb8a3221dd4507921e76e2aef7f4b5be22da96fc2ebdcf4"
+  },
+  {
+    "order": 10,
+    "slug": "governor",
+    "name": "Governor",
+    "claim": "Token holders decide, a timelock carries it out",
+    "summary": "Holders of a test token vote on a new fee by depositing their tokens for or against it, and take them back when the vote ends. A fee that passes is handed to the timelock demo's timelock, which sets it after its public one-minute delay.",
+    "contract": "hash-cc5d0ab12e6b67ccda360f296a45915bd43860026482c6ca6b1e454650f0cab5"
   }
 ]

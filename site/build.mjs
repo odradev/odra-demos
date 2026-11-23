@@ -23,9 +23,14 @@ const projects = JSON.parse(readFileSync(join(root, "site/projects.json"), "utf8
   (a, b) => a.order - b.order,
 );
 
+// The generated client compiles in whatever WASM_CLIENT_SK holds (a key for simulated reads, which
+// these apps do not make). A key set in the shell must never end up in a published bundle.
+const env = { ...process.env };
+delete env.WASM_CLIENT_SK;
+
 function run(command, cwd) {
   console.log(`\n$ ${command}   (${cwd.slice(root.length) || "."})`);
-  execSync(command, { cwd, stdio: "inherit" });
+  execSync(command, { cwd, stdio: "inherit", env });
 }
 
 const escape = (text) =>
