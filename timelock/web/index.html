@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timelock on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Timelock",
+        appId: "csprclick-template",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Timelock</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                A change on a time axis: it is proposed, waits out a public delay, and only then can be
+                executed.
+              </title>
+              <rect class="area" x="60" y="70" width="180" height="70" />
+              <path class="axis" d="M30 140 H340" />
+              <path class="guide" d="M60 70 V140 M240 70 V140" />
+              <path class="curve" d="M60 105 H240" />
+              <path class="curve" d="M240 105 H300" />
+              <circle class="point" cx="60" cy="105" r="5" />
+              <circle class="point" cx="240" cy="105" r="5" />
+              <circle class="done" cx="300" cy="105" r="6" />
+              <text x="60" y="160" text-anchor="middle">Proposed</text>
+              <text x="240" y="160" text-anchor="middle">Ready</text>
+              <text x="300" y="160" text-anchor="middle">Executed</text>
+              <text x="150" y="92" text-anchor="middle">waiting in public</text>
+              <text x="150" y="126" text-anchor="middle">everyone can see it</text>
+              <text x="150" y="58" text-anchor="middle">the delay</text>
+              <path class="guide" d="M60 50 H120 M180 50 H240" />
+              <text x="345" y="144">time</text>
+            </svg>
+            <figcaption>Every change waits out the same public delay before it can run.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a timelock is for</div>
+            <p class="claim">Every change is announced before it happens</p>
+            <p class="sub">
+              A timelock holds the admin keys of other contracts. A change it makes, a new fee, an upgrade or
+              a new admin, is first <b>proposed</b> in public and can be <b>executed</b> only after a delay.
+              Users who do not like what is coming have time to leave before it does.
+            </p>
+            <ul class="points">
+              <li>Proposals are public: anyone can read what will change and when.</li>
+              <li>Nobody can skip the wait, not even whoever proposed the change.</li>
+              <li>A proposal can be cancelled until it is executed.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet, with a few test CSPR for the fees.</p>
+            </li>
+            <li id="step-propose" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Propose a new fee</h3>
+              <p class="sub">
+                The fee belongs to a contract the timelock owns. Nobody can change it directly, so you propose
+                the change below.
+              </p>
+            </li>
+            <li id="step-execute" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Wait, then execute it</h3>
+              <p class="sub">
+                Your proposal waits <b id="step-delay">a minute</b> in the list. Then execute it and see the
+                fee change.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <div class="stack">
+            <section class="card">
+              <h2>The fee today</h2>
+              <div class="asof">The one setting of an imaginary service. Its owner is the timelock.</div>
+              <div class="tiles">
+                <div class="tile">
+                  <div class="label">Fee</div>
+                  <div id="fee" class="value">—</div>
+                  <div class="sub">of every payment</div>
+                </div>
+                <div class="tile">
+                  <div class="label">Every change waits at least</div>
+                  <div id="min-delay" class="value">—</div>
+                  <div class="sub">the timelock's minimum delay</div>
+                </div>
+              </div>
+              <dl class="facts">
+                <dt>Fee contract</dt>
+                <dd id="fee-contract" class="mono">—</dd>
+                <dt>Owned by</dt>
+                <dd id="fee-owner" class="mono">—</dd>
+                <dt>Timelock</dt>
+                <dd id="timelock-contract" class="mono">—</dd>
+              </dl>
+            </section>
+
+            <section class="card">
+              <h2>Propose a change</h2>
+              <div class="asof">
+                Your proposal is public at once and can be executed only after the delay.
+              </div>
+              <form id="propose">
+                <label>
+                  New fee
+                  <span class="with-unit">
+                    <input id="f-fee" inputmode="decimal" placeholder="2.5" required />
+                    <span class="unit">%</span>
+                  </span>
+                  <span class="hint">From 0 to 100, with up to two decimals.</span>
+                </label>
+
+                <fieldset>
+                  <legend>Executable after</legend>
+                  <div id="delays" class="options"></div>
+                  <span class="hint">No shorter than the minimum delay. Anyone can execute it then.</span>
+                </fieldset>
+
+                <div class="callout">
+                  <div class="label">What will happen</div>
+                  <p id="summary"></p>
+                </div>
+
+                <p id="propose-error" class="notice" hidden></p>
+                <button id="propose-submit" class="primary big" disabled>Propose the change</button>
+              </form>
+            </section>
+          </div>
+
+          <section class="card">
+            <div class="row">
+              <h2>Proposals</h2>
+              <button id="reload" class="small">Reload</button>
+            </div>
+            <div class="asof">Every change the timelock has been asked to make, newest first.</div>
+            <div id="operations" class="list">
+              <p class="empty">Loading…</p>
+            </div>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contracts are not audited; this page is a
+            demo. Anyone may propose and execute on this timelock.
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The finished step of the diagram: a filled point, where .point is hollow. */
+.diagram .done {
+  fill: var(--data-odra);
+}
+
+dl.facts dd {
+  overflow-wrap: anywhere;
+}

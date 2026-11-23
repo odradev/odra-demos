@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "timelock::Timelock"
+
+[[contracts]]
+fqn = "fee_config::FeeConfig"
