@@ -1,0 +1,32 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The parts the connected account plays in a deal, under its heading. */
+.item .roles {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* The arbiter's decision on a disputed deal: all to one side, or a split typed in. */
+.item .decide {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.item .decide input {
+  font-variant-numeric: tabular-nums;
+}

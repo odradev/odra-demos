@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escrow on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Escrow",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Escrow</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                The buyer pays into the escrow contract. From there the tokens go on to the seller when the
+                buyer releases them, or back to the buyer when the seller sends them back. In a dispute, the
+                arbiter decides which way they go.
+              </title>
+              <rect class="area" x="135" y="50" width="90" height="56" rx="8" />
+              <rect class="axis" x="135" y="50" width="90" height="56" rx="8" />
+              <path class="curve" d="M48 78 H127 M119 71 L127 78 L119 85" />
+              <path class="curve" d="M233 78 H312 M304 71 L312 78 L304 85" />
+              <path class="guide" d="M150 106 Q 100 150 44 90 M44 100 L44 90 L54 93" />
+              <path class="guide" d="M180 112 V160" stroke-dasharray="4 4" />
+              <circle class="point" cx="40" cy="78" r="6" />
+              <circle class="point" cx="320" cy="78" r="6" />
+              <circle class="point" cx="180" cy="168" r="6" />
+              <text x="40" y="58" text-anchor="middle">Buyer</text>
+              <text x="320" y="58" text-anchor="middle">Seller</text>
+              <text x="180" y="82" text-anchor="middle">Escrow</text>
+              <text x="86" y="70" text-anchor="middle">deposit</text>
+              <text x="272" y="70" text-anchor="middle">release</text>
+              <text x="88" y="150" text-anchor="middle">sent back</text>
+              <text x="194" y="172">Arbiter: decides a dispute</text>
+            </svg>
+            <figcaption>Where the buyer's tokens can go once they are in the escrow.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What an escrow is</div>
+            <p class="claim">Pay a stranger only once the deal is done</p>
+            <p class="sub">
+              The buyer's tokens wait in a smart contract, out of reach of both sides, until the deal is
+              settled. A freelance job, a second-hand sale, an over-the-counter trade: neither side has to pay
+              or deliver first on trust.
+            </p>
+            <ul class="points">
+              <li>
+                The buyer releases the payment to the seller when satisfied; the seller can send it back.
+              </li>
+              <li>
+                If they disagree, either side opens a dispute, and the arbiter both agreed on decides who gets
+                the tokens, or splits them.
+              </li>
+              <li>If nobody opens a dispute by the deadline, the buyer can take the tokens back.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-create" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Make a deal with yourself</h3>
+              <p class="sub">
+                The form fills in your own account as the seller and the arbiter, so one wallet plays all
+                three parts. Release one deal; open a dispute on another and decide it as the arbiter. To play
+                the parts with separate accounts, use Switch above to change accounts in your wallet.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Pay into escrow</h2>
+            <div class="asof">
+              You are the buyer. The tokens leave your wallet now and wait in the contract.
+            </div>
+            <form id="create">
+              <label>
+                Who the payment is for
+                <input id="f-seller" class="mono" placeholder="Public key or account-hash-…" required />
+                <span class="hint"
+                  >The seller's Casper public key. Yours is filled in so you can try it alone.</span
+                >
+              </label>
+
+              <label>
+                Who decides a dispute
+                <input id="f-arbiter" class="mono" placeholder="Public key or account-hash-…" required />
+                <span class="hint"
+                  >The arbiter: someone you and the seller both trust. Yours is filled in so you can try it
+                  alone.</span
+                >
+              </label>
+
+              <label>
+                How much
+                <span class="with-unit">
+                  <input id="f-amount" inputmode="decimal" placeholder="100" required />
+                  <span id="f-amount-symbol" class="unit">TEST</span>
+                </span>
+              </label>
+
+              <details>
+                <summary>Use another token</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" required />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <fieldset>
+                <legend>Deadline</legend>
+                <div class="options">
+                  <button type="button" class="small" data-preset="10m">10 minutes</button>
+                  <button type="button" class="small" data-preset="1d">1 day</button>
+                  <button type="button" class="small" data-preset="7d">7 days</button>
+                  <button type="button" class="small" data-preset="30d">30 days</button>
+                </div>
+                <label>
+                  Until
+                  <input id="f-deadline" type="datetime-local" step="1" required />
+                  <span class="hint"
+                    >Disputes can be opened until then. After it, if there is no dispute, you can take the
+                    tokens back.</span
+                  >
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Pay into escrow</button>
+              <p class="hint">
+                Your wallet will ask twice: first to let the contract take the tokens, then to open the deal.
+              </p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section class="card">
+              <div class="row">
+                <h2>Your deals</h2>
+                <div class="tabs" role="tablist">
+                  <button id="tab-buyer" role="tab" class="tab active">As buyer</button>
+                  <button id="tab-seller" role="tab" class="tab">As seller</button>
+                  <button id="tab-arbiter" role="tab" class="tab">As arbiter</button>
+                </div>
+              </div>
+              <div id="deals" class="list">
+                <p class="empty">Connect a wallet to see your deals.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Look up any deal</h2>
+              <div class="asof">Every deal has a number and is public. No wallet needed.</div>
+              <form id="lookup" class="inline">
+                <input id="lookup-id" inputmode="numeric" placeholder="Deal number, e.g. 0" required />
+                <button>Show</button>
+              </form>
+              <div id="lookup-result" class="list"></div>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

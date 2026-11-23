@@ -1,0 +1,11 @@
+last_updated = "2026-11-23T12:59:22Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "Escrow"
+package_name = "Escrow"
+package_hash = "hash-afb4d38b6d308288ecc22517fcaba68be5571a56076cede2141ffa867e435d43"

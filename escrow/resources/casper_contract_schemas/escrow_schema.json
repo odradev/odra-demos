@@ -1,0 +1,587 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Escrow",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Deal",
+        "description": null,
+        "members": [
+          {
+            "name": "buyer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "seller",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "arbiter",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "deadline",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "state",
+            "description": null,
+            "ty": "DealState"
+          },
+          {
+            "name": "seller_share",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "DealClosed",
+        "description": null,
+        "members": [
+          {
+            "name": "deal_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "state",
+            "description": null,
+            "ty": "DealState"
+          },
+          {
+            "name": "to_seller",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "to_buyer",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "DealCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "deal_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "buyer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "seller",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "arbiter",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "deadline",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "DisputeOpened",
+        "description": null,
+        "members": [
+          {
+            "name": "deal_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "by",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "enum": {
+        "name": "DealState",
+        "description": null,
+        "variants": [
+          {
+            "name": "Funded",
+            "description": null,
+            "discriminant": 0,
+            "ty": "Unit"
+          },
+          {
+            "name": "Disputed",
+            "description": null,
+            "discriminant": 1,
+            "ty": "Unit"
+          },
+          {
+            "name": "Released",
+            "description": null,
+            "discriminant": 2,
+            "ty": "Unit"
+          },
+          {
+            "name": "Refunded",
+            "description": null,
+            "discriminant": 3,
+            "ty": "Unit"
+          },
+          {
+            "name": "Resolved",
+            "description": null,
+            "discriminant": 4,
+            "ty": "Unit"
+          },
+          {
+            "name": "Reclaimed",
+            "description": null,
+            "discriminant": 5,
+            "ty": "Unit"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyDisputed",
+      "description": "A dispute is open already.",
+      "discriminant": 9
+    },
+    {
+      "name": "DeadlineNotInFuture",
+      "description": "The deadline of a new deal is not in the future.",
+      "discriminant": 2
+    },
+    {
+      "name": "DeadlineNotReached",
+      "description": "The buyer can take the deposit back only from the deadline on.",
+      "discriminant": 12
+    },
+    {
+      "name": "DeadlinePassed",
+      "description": "The deadline has passed: a dispute can no longer be opened.",
+      "discriminant": 11
+    },
+    {
+      "name": "DealClosed",
+      "description": "The deal is closed: its deposit has been paid out.",
+      "discriminant": 8
+    },
+    {
+      "name": "DealNotFound",
+      "description": "No deal has this id.",
+      "discriminant": 3
+    },
+    {
+      "name": "DisputeOpen",
+      "description": "A dispute is open: only the arbiter's decision, a release or a refund closes the deal.",
+      "discriminant": 13
+    },
+    {
+      "name": "NotArbiter",
+      "description": "Only the arbiter of the deal may do this.",
+      "discriminant": 7
+    },
+    {
+      "name": "NotBuyer",
+      "description": "Only the buyer of the deal may do this.",
+      "discriminant": 4
+    },
+    {
+      "name": "NotDisputed",
+      "description": "The arbiter can decide only a deal with a dispute open.",
+      "discriminant": 10
+    },
+    {
+      "name": "NotParty",
+      "description": "Only the buyer or the seller of the deal may do this.",
+      "discriminant": 6
+    },
+    {
+      "name": "NotSeller",
+      "description": "Only the seller of the deal may do this.",
+      "discriminant": 5
+    },
+    {
+      "name": "ShareTooLarge",
+      "description": "The seller's share is more than the deposit.",
+      "discriminant": 14
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The amount of a new deal is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_deal",
+      "description": "Opens a deal with the caller as the buyer and pulls `amount` of `token` from the caller, who must have approved this contract for at least that amount. The id of the deal is the value `deals_count` returned before the call; the `DealCreated` event carries it. `deadline` is in milliseconds since the Unix epoch and must be in the future. Any account may hold more than one role, the caller included.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "seller",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "arbiter",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "deadline",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "release",
+      "description": "Pays the whole deposit to the seller. Only the buyer may call it, while the deal is open, with or without a dispute.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "refund",
+      "description": "Sends the whole deposit back to the buyer. Only the seller may call it, while the deal is open, with or without a dispute.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "open_dispute",
+      "description": "Hands the deal to the arbiter. Only the buyer or the seller may call it, before the deadline.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "resolve",
+      "description": "Decides a dispute: `seller_share` of the deposit goes to the seller, the rest to the buyer. Zero decides for the buyer, the whole amount for the seller. Only the arbiter may call it, and only while a dispute is open.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "seller_share",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "reclaim",
+      "description": "Gives the deposit back to the buyer once the deadline has passed with no dispute open. Only the buyer may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "deal",
+      "description": "Returns the deal with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "deal_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Deal",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "deals_count",
+      "description": "Returns the number of deals created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "deals_of_buyer",
+      "description": "Returns the ids of the deals of `account` as the buyer.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "deals_of_seller",
+      "description": "Returns the ids of the deals of `account` as the seller.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "deals_of_arbiter",
+      "description": "Returns the ids of the deals of `account` as the arbiter.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "DealClosed",
+      "ty": "DealClosed"
+    },
+    {
+      "name": "DealCreated",
+      "ty": "DealCreated"
+    },
+    {
+      "name": "DisputeOpened",
+      "ty": "DisputeOpened"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Escrow.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "deals",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Deal"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_buyer",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_seller",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_arbiter",
+        "index": 5,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      }
+    ]
+  }
+}
