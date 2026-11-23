@@ -1,0 +1,11 @@
+last_updated = "2026-11-23T11:41:53Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "Streaming"
+package_name = "Streaming"
+package_hash = "hash-b0626afd8620f08db0e7c6a9a8b68a5269babfc5545a24ee06c271dc0c9bc1c6"

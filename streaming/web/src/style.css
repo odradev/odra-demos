@@ -1,0 +1,21 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The recipient's withdraw field and button, beside the sender's stop button in .actions. */
+.actions form.withdraw {
+  flex: 1 1 320px;
+}
+.actions form.withdraw input {
+  font-variant-numeric: tabular-nums;
+}

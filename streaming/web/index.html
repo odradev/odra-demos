@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Streaming on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Payment Streaming",
+        appId: "csprclick-template",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Payment Streaming</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Tokens paid to the recipient over time: a straight line from nothing at the start to the whole
+                deposit at the end. At any moment, what lies under the line is theirs and the rest can still
+                go back to the sender.
+              </title>
+              <path class="area" d="M40 170 L190 95 L190 170 Z" />
+              <path class="axis" d="M40 20 V170 H340" />
+              <path class="guide" d="M190 95 V40 M300 170 V40 M40 40 H300" />
+              <path class="curve" d="M40 170 L300 40 H340" />
+              <circle class="point" cx="40" cy="170" r="4" />
+              <circle class="point" cx="190" cy="95" r="4" />
+              <circle class="point" cx="300" cy="40" r="4" />
+              <text x="40" y="190" text-anchor="middle">Start</text>
+              <text x="190" y="190" text-anchor="middle">Now</text>
+              <text x="300" y="190" text-anchor="middle">End</text>
+              <text x="28" y="44" text-anchor="end">All</text>
+              <text x="28" y="174" text-anchor="end">0</text>
+              <text x="150" y="160" text-anchor="middle">theirs so far</text>
+              <text x="184" y="64" text-anchor="end">back to you if stopped</text>
+            </svg>
+            <figcaption>How much of the deposit belongs to the recipient as time passes.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What payment streaming is</div>
+            <p class="claim">Pay someone by the second, not once a month</p>
+            <p class="sub">
+              A stream pays a recipient continuously. You deposit the whole amount up front, and it becomes
+              theirs a little every second, from the start time to the end time. Salaries, grants and
+              subscriptions, with no invoices and no waiting for payday.
+            </p>
+            <ul class="points">
+              <li>The deposit sits in a smart contract, out of reach of both sides.</li>
+              <li>The recipient withdraws what has reached them whenever they like, all of it or a part.</li>
+              <li>
+                You can stop a stream at any time: they get what has reached them, you get the rest back.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-create" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Stream some to yourself</h3>
+              <p class="sub">
+                Fill in the form below with yourself as the recipient and 10 minutes, then watch the tokens
+                arrive and withdraw them.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Stream tokens to someone</h2>
+            <div class="asof">The deposit leaves your wallet now and reaches the recipient over time.</div>
+            <form id="create">
+              <label>
+                Who receives them
+                <input id="f-recipient" class="mono" placeholder="Public key or account-hash-…" required />
+                <span class="hint"
+                  >Their Casper public key. Yours is filled in so you can try it on yourself.</span
+                >
+              </label>
+
+              <label>
+                How many in total
+                <span class="with-unit">
+                  <input id="f-amount" inputmode="decimal" placeholder="100" required />
+                  <span id="f-amount-symbol" class="unit">TEST</span>
+                </span>
+              </label>
+
+              <details>
+                <summary>Use another token</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" required />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <fieldset>
+                <legend>Over what time</legend>
+                <div class="options">
+                  <button type="button" class="small" data-preset="10m">10 minutes</button>
+                  <button type="button" class="small" data-preset="1h">1 hour</button>
+                  <button type="button" class="small" data-preset="30d">30 days</button>
+                  <button type="button" class="small" data-preset="1y">1 year</button>
+                </div>
+                <label>
+                  Start
+                  <input id="f-start" type="datetime-local" step="1" required />
+                  <span class="hint">The first tokens reach the recipient from this moment.</span>
+                </label>
+                <label>
+                  End
+                  <input id="f-stop" type="datetime-local" step="1" required />
+                  <span class="hint">The whole deposit is theirs from this moment on.</span>
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Start the stream</button>
+              <p class="hint">
+                Your wallet will ask twice: first to let the contract take the deposit, then to start the
+                stream.
+              </p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section class="card">
+              <div class="row">
+                <h2>Your streams</h2>
+                <div class="tabs" role="tablist">
+                  <button id="tab-receiving" role="tab" class="tab active">Coming to me</button>
+                  <button id="tab-sent" role="tab" class="tab">Sent by me</button>
+                </div>
+              </div>
+              <div id="streams" class="list">
+                <p class="empty">Connect a wallet to see your streams.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Look at any stream</h2>
+              <div class="asof">Every stream has a number and is public. No wallet needed.</div>
+              <form id="lookup" class="inline">
+                <input id="lookup-id" inputmode="numeric" placeholder="Stream number, e.g. 0" required />
+                <button>Show</button>
+              </form>
+              <div id="lookup-result" class="list"></div>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

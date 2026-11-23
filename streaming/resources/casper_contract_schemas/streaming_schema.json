@@ -1,0 +1,469 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Streaming",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Stream",
+        "description": null,
+        "members": [
+          {
+            "name": "sender",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "recipient",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "deposit",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "withdrawn",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "stop",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "cancelled",
+            "description": null,
+            "ty": "Bool"
+          },
+          {
+            "name": "refunded",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "StreamCancelled",
+        "description": null,
+        "members": [
+          {
+            "name": "stream_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "sender",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "recipient",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "paid",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "refunded",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "StreamCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "stream_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "sender",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "recipient",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "deposit",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "stop",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Withdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "stream_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "recipient",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyCancelled",
+      "description": "The stream has been cancelled already.",
+      "discriminant": 8
+    },
+    {
+      "name": "AmountExceedsBalance",
+      "description": "The amount is more than has accrued and was not withdrawn yet.",
+      "discriminant": 7
+    },
+    {
+      "name": "AmountTooLarge",
+      "description": "The deposit is too large to compute an accrued share of.",
+      "discriminant": 3
+    },
+    {
+      "name": "InvalidTimes",
+      "description": "The times do not satisfy `start < stop`.",
+      "discriminant": 2
+    },
+    {
+      "name": "NotRecipient",
+      "description": "Only the recipient of the stream may do this.",
+      "discriminant": 5
+    },
+    {
+      "name": "NotSender",
+      "description": "Only the sender of the stream may do this.",
+      "discriminant": 6
+    },
+    {
+      "name": "StreamNotFound",
+      "description": "No stream has this id.",
+      "discriminant": 4
+    },
+    {
+      "name": "ZeroAmount",
+      "description": "The deposit or the amount to withdraw is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_stream",
+      "description": "Creates a stream and pulls `deposit` of `token` from the caller, who must have approved this contract for at least that amount. The id of the stream is the value `streams_count` returned before the call; the `StreamCreated` event carries it. The deposit accrues to the recipient linearly from `start` to `stop`, both in milliseconds since the Unix epoch, with `start < stop`. A `start` in the past is allowed.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "recipient",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "deposit",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "start",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "stop",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw",
+      "description": "Pays `amount` of what has accrued and was not withdrawn yet to the recipient. Only the recipient may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "stream_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "amount",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "cancel",
+      "description": "Stops the stream: what has accrued and was not withdrawn goes to the recipient, the rest back to the sender. Only the sender may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "stream_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "stream",
+      "description": "Returns the stream with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "stream_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Stream",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "balance_of",
+      "description": "Returns what `who` would get out of the stream now: for the recipient, what has accrued and was not withdrawn; for the sender, what has not accrued yet; for anyone else, zero.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "stream_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "who",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "streams_count",
+      "description": "Returns the number of streams created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "streams_of_sender",
+      "description": "Returns the ids of the streams `sender` sends.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sender",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "streams_of_recipient",
+      "description": "Returns the ids of the streams `recipient` receives.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "recipient",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "StreamCancelled",
+      "ty": "StreamCancelled"
+    },
+    {
+      "name": "StreamCreated",
+      "ty": "StreamCreated"
+    },
+    {
+      "name": "Withdrawn",
+      "ty": "Withdrawn"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Streaming.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "streams",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Stream"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_sender",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_recipient",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      }
+    ]
+  }
+}
