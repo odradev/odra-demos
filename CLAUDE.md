@@ -28,6 +28,15 @@ reference for how a project is laid out; copy its structure for a new one.
   a contract that is already deployed (the `TestToken` of `vesting`) instead of deploying a copy:
   put its package hash in `resources/casper-test-contracts.toml` before running `deploy`.
 - NCTL's limits and costs can differ from the testnet's. Say where a number was measured.
+- What a transaction costs: the network charges the gas limit and refunds three quarters of what
+  was not used, so a loose limit costs real CSPR. A failed transaction is charged its whole limit.
+  Deploying one contract took about 310 CSPR net with a 400 CSPR limit (about 285 consumed).
+- Set a deploy limit from a measurement, not a guess: run the deploy on CasperVM
+  (`ODRA_BACKEND=casper`) and read `env.gas_report()`; it matched the testnet within about 1%.
+  Measure the wasm files that will be deployed: `cargo odra build` and `cargo odra test -b casper`
+  can produce files of different sizes.
+- Agents working in parallel share one key, so a balance before and after says nothing about one
+  project. Take costs per transaction from `info_get_transaction` (`cost` minus `refund`).
 
 ## Web apps: read state with odra-storage-reader
 
@@ -53,6 +62,10 @@ a node that serves speculative execution.
   `WASM_CLIENT_SK`.
 - Browsers cannot call public nodes (no CORS). Use `https://testnet-rpc.odra.dev` or
   `https://mainnet-rpc.odra.dev`.
+- A view of odra-cli runs locally with the time of the last block, so its result can differ from
+  what the next transaction sees. Do not size a transaction from a time-dependent view.
+- Build order: `cargo odra build` (writes the schemas), `cargo odra generate-client`, then in
+  `web/`: `npm run reader`, `npm install`, `npm run build`.
 
 ## Web apps: use the Odra style
 
@@ -80,7 +93,8 @@ Every web app in this repository looks the same: the Odra web style, shared from
 ## The site
 
 `site/` is the page that lists every app; `site/build.mjs` assembles it and all the apps into
-`_site/`, which the `Pages` workflow publishes to GitHub Pages on every push to `main`.
+`_site/`, which the `Pages` workflow publishes to GitHub Pages on every push to `main`. It is
+served at https://odra.dev/odra-demos/.
 
 - The page is a plain list of demos. It does not say that a project is added every day, and
   shows no day numbers.

@@ -38,12 +38,20 @@ export function refreshState(): void {
 }
 
 async function rpc<T>(method: string, params: object): Promise<T> {
-  const response = await fetch(rpcUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
-  if (!response.ok) throw new Error(`The node answered ${response.status}.`);
+  // A node that is down fails the request itself (the browser reports only "Failed to fetch") or
+  // answers with an error status. Either way the reader needs to hear that it is the node.
+  const unavailable = "The Casper node this page reads from is not answering. Try again in a few minutes.";
+  let response: Response;
+  try {
+    response = await fetch(rpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    });
+  } catch {
+    throw new Error(unavailable);
+  }
+  if (!response.ok) throw new Error(`${unavailable} (HTTP ${response.status})`);
   const body = await response.json();
   if (body.error) throw new RpcError(body.error.message, body.error.code);
   return body.result;

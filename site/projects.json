@@ -14,5 +14,29 @@
     "claim": "Pay many accounts with one signature",
     "summary": "Paste a list of recipients and amounts and send CSPR or a CEP-18 token to all of them in one transaction: everyone is paid, or nobody is.",
     "contract": "hash-52e9f322a88e0b3455113bb56ddffd52035cccfc97d13e76551f30a9d141f2e5"
+  },
+  {
+    "order": 3,
+    "slug": "streaming",
+    "name": "Payment streaming",
+    "claim": "Pay someone by the second, not once a month",
+    "summary": "A sender deposits CEP-18 tokens once and they reach the recipient continuously, second by second, until the end date. The recipient withdraws what has arrived whenever they like, and the sender can stop the stream to take back what has not.",
+    "contract": "hash-b0626afd8620f08db0e7c6a9a8b68a5269babfc5545a24ee06c271dc0c9bc1c6"
+  },
+  {
+    "order": 4,
+    "slug": "locker",
+    "name": "Liquidity locker",
+    "claim": "Show everyone that your liquidity cannot be pulled",
+    "summary": "Lock CEP-18 tokens, such as DEX pool tokens, in a contract with no admin until a date that can only move later. Anyone can paste a token address and see, without a wallet, how much is locked, by whom and until when.",
+    "contract": "hash-7677cedb46c36e2ca04eb8cde0252c2f38777b1cee20ddf4833ac8eff686166e"
+  },
+  {
+    "order": 5,
+    "slug": "timelock",
+    "name": "Timelock",
+    "claim": "Every change is announced before it happens",
+    "summary": "A timelock holds the admin keys of other contracts and runs each change only after a public delay, so users see what is coming and have time to leave. Propose a new fee for a contract the timelock owns, watch it wait, then execute it.",
+    "contract": "hash-49a1c722fe262dd39ca052ac88fabf0e221c5a1726bace7a90b944a1e2c1feef"
   }
 ]

@@ -35,6 +35,8 @@ Pays a recipient continuously: the sender deposits tokens, and the recipient can
 
 **Why:** salaries, grants and subscriptions paid by the second, with no trust needed after the deposit. Nothing on Casper does this on-chain today.
 
+Built: [streaming/](streaming/).
+
 **Scope:**
 - `create_stream(recipient, token, deposit, start, stop)`
 - `withdraw(stream_id, amount)`: the recipient takes accrued funds
@@ -46,6 +48,8 @@ Pays a recipient continuously: the sender deposits tokens, and the recipient can
 Locks DEX liquidity-pool tokens until a set date, so everyone can check on-chain that a project cannot pull its liquidity.
 
 **Why:** CSPR.trade is new and new tokens are listing on it. A public lock is the standard way for a project to show it will not remove liquidity, and Casper has no locker yet.
+
+Built: [locker/](locker/).
 
 **Scope:**
 - `lock(token, amount, unlock_time)`
@@ -59,6 +63,8 @@ Locks DEX liquidity-pool tokens until a set date, so everyone can check on-chain
 Holds admin rights over other contracts and executes each operation only after a public delay.
 
 **Why:** Casper contracts are upgradable, so users have to trust whoever holds the upgrade key. With a timelock as the owner, every upgrade or parameter change is visible in advance and users have time to exit.
+
+Built: [timelock/](timelock/).
 
 **Scope:**
 - `schedule(target, entry_point, args, delay)`: proposer role

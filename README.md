@@ -1,6 +1,6 @@
 # Odra demos
 
-Smart contracts for [Casper](https://casper.network) written in [Odra](https://odra.dev), each with a web app to try on the testnet: **[odradev.github.io/odra-demos](https://odradev.github.io/odra-demos/)**.
+Smart contracts for [Casper](https://casper.network) written in [Odra](https://odra.dev), each with a web app to try on the testnet: **[odra.dev/odra-demos](https://odra.dev/odra-demos/)**.
 
 Each demo is something the Casper ecosystem was missing: a token tool, a DeFi building block, a governance or identity primitive. Each one is a single contract with tests, small enough to read in one sitting and to reuse in your own project.
 
@@ -10,6 +10,9 @@ Each demo is something the Casper ecosystem was missing: a token tool, a DeFi bu
 |---------|--------------|
 | [Token vesting](vesting/) | Locks CEP-18 tokens for a beneficiary and releases them over time, with a cliff and optional revoking. Comes with a web app. |
 | [Multisend](multisend/) | Sends CSPR or a CEP-18 token to many recipients in one transaction, signed once: all of them or none. Comes with a web app. |
+| [Payment streaming](streaming/) | Pays a recipient continuously from a deposit of CEP-18 tokens; the recipient withdraws what has accrued, the sender can stop the stream. Comes with a web app. |
+| [Liquidity locker](locker/) | Locks CEP-18 tokens until a date that can only move later, and shows anyone what is locked for a token. Comes with a web app. |
+| [Timelock](timelock/) | Holds admin rights over other contracts and executes each operation only after a public delay. Comes with a web app. |
 
 ## Layout
 
