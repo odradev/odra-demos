@@ -1,0 +1,68 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+dl.facts dd {
+  overflow-wrap: anywhere;
+}
+
+/* Two figures in the narrow column: two columns, so the values do not wrap. */
+.tiles.pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The diagram: the finished step is a filled point, where .point is hollow; the vote bar has the
+   tokens for in the Odra colour and the tokens against in the second data colour. */
+.diagram .done,
+.diagram .for {
+  fill: var(--data-odra);
+}
+
+.diagram .against {
+  fill: var(--data-other);
+}
+
+/* A vote bar: .fill holds the tokens for from the left, .against the tokens against from the
+   right, and .mark stands at the quorum. */
+.progress .against {
+  position: absolute;
+  inset: 0 0 0 auto;
+  max-width: 100%;
+  border-radius: 3px;
+  background: var(--data-other);
+}
+
+.dot.against {
+  background: var(--data-other);
+}
+
+.ticks .side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticks span:last-child .side {
+  justify-content: flex-end;
+}
+
+.ticks span:nth-child(2):not(:last-child) {
+  text-align: center;
+}
+
+/* The amount and the two vote buttons of a proposal on one row, wrapping on a narrow screen. */
+.vote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.vote .with-unit {
+  flex: 1 1 140px;
+}

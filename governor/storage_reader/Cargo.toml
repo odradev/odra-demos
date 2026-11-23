@@ -1,0 +1,18 @@
+# Builds odra-storage-reader, the library the web app reads contract storage with, to wasm.
+# Odra does not publish it as an npm package: `npm run reader` in ../web builds it from here.
+[package]
+edition = "2021"
+name = "governor-storage-reader"
+version = "0.1.0"
+description = "odra-storage-reader built for the governor web app"
+publish = false
+
+[dependencies]
+odra-storage-reader = { git = "https://github.com/odradev/odra.git", branch = "release/2.11.0" }
+
+[lib]
+crate-type = ["cdylib"]
+name = "governor_storage_reader"
+path = "src/lib.rs"
+
+[workspace]

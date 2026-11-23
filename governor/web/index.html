@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Governor on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Governor",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <img src="./assets/odra-logo-white.png" alt="Odra" width="110" height="32" />
+          <span class="sep"></span>
+          <h1>Governor</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                A bar of the tokens deposited for and against a new fee, with the quorum marked on it. Once
+                the vote passes, the change waits out the timelock's delay, and then the fee changes.
+              </title>
+              <text x="30" y="26">Tokens deposited</text>
+              <rect class="area" x="30" y="36" width="300" height="20" />
+              <rect class="for" x="30" y="36" width="190" height="20" />
+              <rect class="against" x="270" y="36" width="60" height="20" />
+              <path class="guide" d="M150 30 V62" />
+              <text x="30" y="76">for</text>
+              <text x="150" y="76" text-anchor="middle">quorum</text>
+              <text x="330" y="76" text-anchor="end">against</text>
+              <path class="guide" d="M60 86 V124" />
+              <path class="axis" d="M30 150 H340" />
+              <path class="curve" d="M60 130 H300" />
+              <circle class="point" cx="60" cy="130" r="5" />
+              <circle class="point" cx="240" cy="130" r="5" />
+              <circle class="done" cx="300" cy="130" r="6" />
+              <text x="150" y="120" text-anchor="middle">the timelock's delay</text>
+              <text x="60" y="170" text-anchor="middle">Passed</text>
+              <text x="240" y="170" text-anchor="middle">Ready</text>
+              <text x="300" y="190" text-anchor="middle">Fee changes</text>
+            </svg>
+            <figcaption>
+              Holders vote with their tokens; a change that passes still waits in public.
+            </figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a governor is for</div>
+            <p class="claim">Token holders decide, a timelock carries it out</p>
+            <p class="sub">
+              A governor lets the holders of a token decide how a service is run; here, its fee. Anyone can
+              <b>propose</b> a new fee, holders <b>vote</b> for or against it with their tokens, and a fee
+              that wins goes to a <b>timelock</b>, which sets it after a public delay.
+            </p>
+            <ul class="points">
+              <li>You vote by depositing tokens, and take them back when the vote ends.</li>
+              <li>A fee passes with enough tokens in favour and more for than against.</li>
+              <li>Nobody, not even the winners, can skip the timelock's delay.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet and get tokens</h3>
+              <p class="sub">
+                Casper Wallet, switched to the testnet. TEST is a token made for these demos. You have
+                <b id="balance">—</b>.
+              </p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-vote" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Propose a fee and vote for it</h3>
+              <p class="sub">
+                Propose a fee below, then vote for it with your TEST. Voting lasts
+                <b id="step-period">a few minutes</b>.
+              </p>
+            </li>
+            <li id="step-execute" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Queue it, then execute it</h3>
+              <p class="sub">
+                When the vote ends, queue the fee in the timelock;
+                <b id="step-delay">a minute</b> later, execute it and see the fee change. Then take your TEST
+                back.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <div class="stack">
+            <section class="card">
+              <h2>The fee today</h2>
+              <div class="asof">The one setting of an imaginary service. Its owner is the timelock.</div>
+              <div class="tiles pair">
+                <div class="tile">
+                  <div class="label">Fee</div>
+                  <div id="fee" class="value">—</div>
+                  <div class="sub">of every payment</div>
+                </div>
+                <div class="tile">
+                  <div class="label">A change waits</div>
+                  <div id="min-delay" class="value">—</div>
+                  <div class="sub">the timelock's delay</div>
+                </div>
+              </div>
+              <dl class="facts">
+                <dt>Voting lasts</dt>
+                <dd id="voting-period">—</dd>
+                <dt>A fee passes with</dt>
+                <dd id="quorum">—</dd>
+                <dt>To propose, hold</dt>
+                <dd id="threshold">—</dd>
+                <dt>Governor</dt>
+                <dd id="governor-contract" class="mono">—</dd>
+                <dt>Timelock</dt>
+                <dd id="timelock-contract" class="mono">—</dd>
+                <dt>Fee contract</dt>
+                <dd id="fee-contract" class="mono">—</dd>
+              </dl>
+            </section>
+
+            <section class="card">
+              <h2>Propose a new fee</h2>
+              <div class="asof">Voting on it starts at once. Proposing locks none of your tokens.</div>
+              <form id="propose">
+                <label>
+                  New fee
+                  <span class="with-unit">
+                    <input id="f-fee" inputmode="decimal" placeholder="2.5" required />
+                    <span class="unit">%</span>
+                  </span>
+                  <span class="hint">From 0 to 100, with up to two decimals.</span>
+                </label>
+
+                <div class="callout">
+                  <div class="label">What will happen</div>
+                  <p id="summary"></p>
+                </div>
+
+                <p id="propose-error" class="notice" hidden></p>
+                <button id="propose-submit" class="primary big" disabled>Propose the fee</button>
+              </form>
+            </section>
+          </div>
+
+          <section class="card">
+            <div class="row">
+              <h2>Proposals</h2>
+              <button id="reload" class="small">Reload</button>
+            </div>
+            <div class="asof">Every fee proposed to the governor, newest first.</div>
+            <div id="proposals" class="list">
+              <p class="empty">Loading…</p>
+            </div>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contracts are not audited; this page is a
+            demo. The timelock of this demo is open to anyone, so its fee can also be changed without a vote.
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

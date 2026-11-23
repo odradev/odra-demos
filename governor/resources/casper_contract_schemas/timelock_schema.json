@@ -1,0 +1,613 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Timelock",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "MinDelayChanged",
+        "description": null,
+        "members": [
+          {
+            "name": "old_delay",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "new_delay",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Operation",
+        "description": null,
+        "members": [
+          {
+            "name": "proposer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "target",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "entry_point",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "args",
+            "description": null,
+            "ty": {
+              "List": "U8"
+            }
+          },
+          {
+            "name": "proposed_at",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "ready_at",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "executed",
+            "description": null,
+            "ty": "Bool"
+          },
+          {
+            "name": "cancelled",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "OperationCancelled",
+        "description": null,
+        "members": [
+          {
+            "name": "operation_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "canceller",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "OperationExecuted",
+        "description": null,
+        "members": [
+          {
+            "name": "operation_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "executor",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "OperationScheduled",
+        "description": null,
+        "members": [
+          {
+            "name": "operation_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "proposer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "target",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "entry_point",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "args",
+            "description": null,
+            "ty": {
+              "List": "U8"
+            }
+          },
+          {
+            "name": "ready_at",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "RoleGranted",
+        "description": null,
+        "members": [
+          {
+            "name": "role",
+            "description": null,
+            "ty": "U8"
+          },
+          {
+            "name": "account",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "RoleRevoked",
+        "description": null,
+        "members": [
+          {
+            "name": "role",
+            "description": null,
+            "ty": "U8"
+          },
+          {
+            "name": "account",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyCancelled",
+      "description": "The operation has been cancelled.",
+      "discriminant": 11
+    },
+    {
+      "name": "AlreadyExecuted",
+      "description": "The operation has been executed already.",
+      "discriminant": 10
+    },
+    {
+      "name": "DelayTooLong",
+      "description": "The delay is longer than `MAX_DELAY`.",
+      "discriminant": 4
+    },
+    {
+      "name": "DelayTooShort",
+      "description": "The delay is shorter than the minimum delay.",
+      "discriminant": 3
+    },
+    {
+      "name": "EmptyEntryPoint",
+      "description": "The entry point name is empty.",
+      "discriminant": 6
+    },
+    {
+      "name": "InvalidArgs",
+      "description": "The arguments are not serialized `RuntimeArgs`.",
+      "discriminant": 7
+    },
+    {
+      "name": "MissingRole",
+      "description": "The caller does not hold the role the entry point needs.",
+      "discriminant": 1
+    },
+    {
+      "name": "NotReady",
+      "description": "The delay of the operation has not passed yet.",
+      "discriminant": 9
+    },
+    {
+      "name": "NotTimelock",
+      "description": "Only the timelock itself may do this: schedule an operation that calls this entry point.",
+      "discriminant": 2
+    },
+    {
+      "name": "OperationNotFound",
+      "description": "No operation has this id.",
+      "discriminant": 8
+    },
+    {
+      "name": "TargetNotContract",
+      "description": "The target is an account, not a contract.",
+      "discriminant": 5
+    },
+    {
+      "name": "UnknownRole",
+      "description": "There is no role with this number.",
+      "discriminant": 12
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "schedule",
+      "description": "Proposes a call of `entry_point` of `target` with `args` (serialized `RuntimeArgs`), executable `delay` milliseconds from now. `delay` must be at least the minimum delay. The id of the operation is the value `operations_count` returned before the call; the `OperationScheduled` event carries it. Needs the proposer role.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "target",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "entry_point",
+          "description": null,
+          "ty": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "description": null,
+          "ty": {
+            "List": "U8"
+          },
+          "optional": false
+        },
+        {
+          "name": "delay",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "execute",
+      "description": "Makes the call of an operation whose delay has passed. Needs the executor role. If the call fails, the whole transaction fails and the operation stays ready to execute.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "operation_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "cancel",
+      "description": "Cancels an operation that has not been executed. Needs the canceller role, or the caller must be the proposer of the operation.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "operation_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "update_delay",
+      "description": "Changes the minimum delay. Only the timelock itself may call it, through an operation.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "new_delay",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "grant_role",
+      "description": "Gives `account` a role (1 proposer, 2 executor, 3 canceller). Only the timelock itself may call it, through an operation.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "role",
+          "description": null,
+          "ty": "U8",
+          "optional": false
+        },
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "revoke_role",
+      "description": "Takes a role from `account`. Only the timelock itself may call it, through an operation.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "role",
+          "description": null,
+          "ty": "U8",
+          "optional": false
+        },
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "renounce_role",
+      "description": "Gives up a role the caller holds.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "role",
+          "description": null,
+          "ty": "U8",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "operation",
+      "description": "Returns the operation with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "operation_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Operation",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "operations_count",
+      "description": "Returns the number of operations proposed. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "min_delay",
+      "description": "Returns the minimum delay, in milliseconds.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "has_role",
+      "description": "Returns whether `account` holds `role` itself. A role opened to `anyone()` is reported for `anyone()` only.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "role",
+          "description": null,
+          "ty": "U8",
+          "optional": false
+        },
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Bool",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "MinDelayChanged",
+      "ty": "MinDelayChanged"
+    },
+    {
+      "name": "OperationCancelled",
+      "ty": "OperationCancelled"
+    },
+    {
+      "name": "OperationExecuted",
+      "ty": "OperationExecuted"
+    },
+    {
+      "name": "OperationScheduled",
+      "ty": "OperationScheduled"
+    },
+    {
+      "name": "RoleGranted",
+      "ty": "RoleGranted"
+    },
+    {
+      "name": "RoleRevoked",
+      "ty": "RoleRevoked"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Timelock.wasm",
+    "description": "Sets the minimum delay (milliseconds) and the first holders of each role. `anyone()` (`account-hash-00…00`) in a list opens the role to every account.",
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "min_delay",
+        "description": null,
+        "ty": "U64",
+        "optional": false
+      },
+      {
+        "name": "proposers",
+        "description": null,
+        "ty": {
+          "List": "Key"
+        },
+        "optional": false
+      },
+      {
+        "name": "executors",
+        "description": null,
+        "ty": {
+          "List": "Key"
+        },
+        "optional": false
+      },
+      {
+        "name": "cancellers",
+        "description": null,
+        "ty": {
+          "List": "Key"
+        },
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "min_delay",
+        "index": 1,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "operations",
+        "index": 2,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Operation"
+        }
+      },
+      {
+        "name": "count",
+        "index": 3,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "proposers",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": "Bool"
+        }
+      },
+      {
+        "name": "executors",
+        "index": 5,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": "Bool"
+        }
+      },
+      {
+        "name": "cancellers",
+        "index": 6,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": "Bool"
+        }
+      }
+    ]
+  }
+}

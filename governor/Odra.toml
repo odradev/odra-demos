@@ -1,0 +1,11 @@
+[[contracts]]
+fqn = "governor::Governor"
+
+[[contracts]]
+fqn = "timelock::Timelock"
+
+[[contracts]]
+fqn = "fee_config::FeeConfig"
+
+[[contracts]]
+fqn = "token::TestToken"

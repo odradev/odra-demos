@@ -1,0 +1,21 @@
+last_updated = "2026-11-23T13:07:30Z"
+
+[[contracts]]
+name = "Timelock"
+package_name = "Timelock"
+package_hash = "hash-49a1c722fe262dd39ca052ac88fabf0e221c5a1726bace7a90b944a1e2c1feef"
+
+[[contracts]]
+name = "FeeConfig"
+package_name = "FeeConfig"
+package_hash = "hash-065e07774e20253c58a274a4876a0b3f13573553696b37c348d1c4ddefb83525"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "Governor"
+package_name = "Governor"
+package_hash = "hash-cc5d0ab12e6b67ccda360f296a45915bd43860026482c6ca6b1e454650f0cab5"
