@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bonding curve token on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Bonding Curve",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <a href="../" title="All the demos"
+            ><img src="./assets/odra-logo-white.png" alt="Odra: all the demos" width="110" height="32"
+          /></a>
+          <span class="sep"></span>
+          <h1>Bonding curve</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram curve-chart">
+            <svg id="chart" viewBox="0 0 400 240" role="img" aria-labelledby="chart-title">
+              <title id="chart-title">
+                The price of a token against the number of tokens in existence: a straight line that rises with
+                every token sold. The shaded area up to the current supply is the CSPR the contract holds.
+              </title>
+            </svg>
+            <figcaption id="chart-caption">The price of a token, by how many exist.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a bonding curve is</div>
+            <p class="claim">A token that sells itself, at a price that rises with every sale</p>
+            <p class="sub">
+              Pay <b>CSPR</b> and the contract mints <b>CURVE</b> tokens to you. Every token it sells makes the
+              next one a little dearer, along a straight line. Sell your tokens back whenever you like: the
+              contract burns them and pays you from the CSPR that buyers paid in, at the price on the line.
+            </p>
+            <ul class="points">
+              <li>The shaded area under the line is the reserve: enough CSPR to buy back every token.</li>
+              <li>No owner and no fees. The contract rounds every price a fraction of a mote in its own favour.</li>
+              <li>Everything on this page is read from the contract, no wallet needed.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <div class="stack">
+          <section id="token-now" class="card">
+            <h2>The token now</h2>
+            <div class="asof">Read from the contract's storage on the testnet.</div>
+            <div class="tiles">
+              <div class="tile">
+                <div class="label">Price of one CURVE</div>
+                <div id="t-price" class="value">—</div>
+                <div id="t-price-sub" class="sub">CSPR</div>
+              </div>
+              <div class="tile">
+                <div class="label">Tokens in existence</div>
+                <div id="t-supply" class="value">—</div>
+                <div class="sub">CURVE, all of them bought from the curve</div>
+              </div>
+              <div class="tile">
+                <div class="label">Reserve</div>
+                <div id="t-reserve" class="value">—</div>
+                <div class="sub">CSPR held to buy them back</div>
+              </div>
+              <div class="tile">
+                <div class="label">Yours</div>
+                <div id="t-mine" class="value">—</div>
+                <div id="t-mine-sub" class="sub">Connect a wallet to see it</div>
+              </div>
+            </div>
+          </section>
+  
+          <section class="card steps">
+            <h2>Try it in three steps</h2>
+            <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+            <ol class="tiles">
+              <li id="step-connect" class="tile">
+                <div class="label"><span class="num">1</span>Step one</div>
+                <h3>Connect a wallet</h3>
+                <p class="sub">Casper Wallet, switched to the testnet.</p>
+              </li>
+              <li id="step-cspr" class="tile">
+                <div class="label"><span class="num">2</span>Step two</div>
+                <h3>Have some test CSPR</h3>
+                <p class="sub">
+                  You have <b id="cspr-balance">—</b>. The
+                  <a href="https://testnet.cspr.live/tools/faucet" target="_blank" rel="noopener noreferrer"
+                    >testnet faucet</a
+                  >
+                  gives 1,000 CSPR once per account.
+                </p>
+              </li>
+              <li id="step-trade" class="tile">
+                <div class="label"><span class="num">3</span>Step three</div>
+                <h3>Buy, then sell some back</h3>
+                <p class="sub">
+                  Buy CURVE for a few CSPR and watch the point move up the line. Then sell part of it and see what
+                  you get back.
+                </p>
+              </li>
+            </ol>
+          </section>
+        </div>
+
+        <div class="split">
+          <section class="card">
+            <div class="row">
+              <h2 id="trade-title">Buy CURVE</h2>
+              <div class="tabs" role="tablist">
+                <button id="tab-buy" role="tab" class="tab active" aria-selected="true" data-tab="buy">Buy</button>
+                <button id="tab-sell" role="tab" class="tab" aria-selected="false" data-tab="sell">Sell</button>
+              </div>
+            </div>
+
+            <form id="buy">
+              <label>
+                You pay
+                <span class="with-unit">
+                  <input id="f-cspr" inputmode="decimal" placeholder="10" required />
+                  <span class="unit">CSPR</span>
+                </span>
+                <span id="f-cspr-hint" class="hint">The contract mints as many CURVE as this buys.</span>
+              </label>
+              <div class="options">
+                <button type="button" class="small" data-cspr="5">5 CSPR</button>
+                <button type="button" class="small" data-cspr="10">10 CSPR</button>
+                <button type="button" class="small" data-cspr="50">50 CSPR</button>
+                <button type="button" class="small" data-cspr="200">200 CSPR</button>
+              </div>
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="buy-summary">Enter an amount of CSPR to see what it buys.</p>
+              </div>
+              <p id="buy-error" class="notice" hidden></p>
+              <button id="buy-submit" class="primary big" disabled>Connect a wallet to buy</button>
+            </form>
+
+            <form id="sell" hidden>
+              <label>
+                You sell
+                <span class="with-unit">
+                  <input id="f-tokens" inputmode="decimal" placeholder="10" required />
+                  <span class="unit">CURVE</span>
+                </span>
+                <span id="f-tokens-hint" class="hint">The contract burns them and pays you in CSPR.</span>
+              </label>
+              <div class="options">
+                <button type="button" class="small" data-share="25">A quarter</button>
+                <button type="button" class="small" data-share="50">Half</button>
+                <button type="button" class="small" data-share="100">All of it</button>
+              </div>
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="sell-summary">Enter an amount of CURVE to see what it pays.</p>
+              </div>
+              <p id="sell-error" class="notice" hidden></p>
+              <button id="sell-submit" class="primary big" disabled>Connect a wallet to sell</button>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>How the price is set</h2>
+            <div class="asof">The same arithmetic runs in the contract and on this page.</div>
+            <p>
+              A token costs <b id="p-base">—</b> CSPR when none exists, and <b id="p-slope">—</b> CSPR more for
+              every token in existence. What a purchase costs is the area under the line between the supply
+              before and after it, so a large purchase pays the rising price for every part of itself. A sale pays
+              the area it takes away.
+            </p>
+            <div class="callout">
+              <div class="label">The formula</div>
+              <p class="mono">
+                price(supply) = base + slope × supply<br />
+                cost(a) = base × a + slope × (2 × supply × a + a²) / 2
+              </p>
+            </div>
+            <p class="hint">
+              Purchases round up and sales round down, to the mote. Buying and selling back the same amount
+              therefore never returns more than was paid in, and the reserve always covers every holder. Each
+              transaction carries a minimum 1% below the quote: if someone else trades first and moves the price
+              further, it fails instead of filling at a worse price.
+            </p>
+            <details>
+              <summary>The curve as numbers</summary>
+              <div class="scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tokens in existence</th>
+                      <th>Price of one, CSPR</th>
+                      <th>Reserve at that supply, CSPR</th>
+                    </tr>
+                  </thead>
+                  <tbody id="curve-table"></tbody>
+                </table>
+              </div>
+            </details>
+            <details>
+              <summary>The contract</summary>
+              <dl id="facts" class="facts"></dl>
+            </details>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

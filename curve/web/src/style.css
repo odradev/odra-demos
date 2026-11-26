@@ -1,0 +1,44 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The live chart of the curve: the guide's line diagram, a little wider, with the stretch of a
+   purchase or a sale drawn in the lighter step of the Odra series. */
+.diagram.curve-chart {
+  flex-basis: 460px;
+}
+.diagram .preview {
+  fill: var(--data-odra-soft);
+}
+.diagram .here {
+  fill: var(--text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.diagram .readout text {
+  fill: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.diagram svg {
+  touch-action: none;
+}
+
+/* Four figures of the token in one row: the guide's tiles come three to a row. */
+#token-now .tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 860px) {
+  #token-now .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

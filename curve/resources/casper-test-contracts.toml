@@ -1,0 +1,6 @@
+last_updated = "2026-11-26T08:18:09Z"
+
+[[contracts]]
+name = "Curve"
+package_name = "Curve"
+package_hash = "hash-6ad107591383e6ac2906df5d989b0b5444dc0b340009216a1d4446533640490b"
