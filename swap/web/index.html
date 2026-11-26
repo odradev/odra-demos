@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTC swap on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper OTC Swap",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <a href="../" title="All the demos"
+            ><img src="./assets/odra-logo-white.png" alt="Odra: all the demos" width="110" height="32"
+          /></a>
+          <span class="sep"></span>
+          <h1>OTC swap</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                The maker puts 100 TEST in the swap contract. When the taker takes the offer, in one
+                transaction the taker's 250 TUSD go to the maker and the contract's 100 TEST go to the taker.
+              </title>
+              <rect class="area" x="135" y="42" width="90" height="56" rx="8" />
+              <rect class="axis" x="135" y="42" width="90" height="56" rx="8" />
+              <path class="curve" d="M48 70 H127 M119 63 L127 70 L119 77" />
+              <path class="curve" d="M233 70 H312 M304 63 L312 70 L304 77" />
+              <path class="curve" d="M316 80 Q 180 200 44 80 M44 91 L44 80 L54 84" />
+              <path class="guide" d="M180 98 V128" stroke-dasharray="4 4" />
+              <circle class="point" cx="40" cy="70" r="6" />
+              <circle class="point" cx="320" cy="70" r="6" />
+              <text x="40" y="50" text-anchor="middle">Maker</text>
+              <text x="320" y="50" text-anchor="middle">Taker</text>
+              <text x="180" y="74" text-anchor="middle">Swap</text>
+              <text x="86" y="62" text-anchor="middle">100 TEST</text>
+              <text x="272" y="62" text-anchor="middle">100 TEST</text>
+              <text x="180" y="125" text-anchor="middle">250 TUSD</text>
+              <text x="180" y="190" text-anchor="middle">both legs in one transaction</text>
+            </svg>
+            <figcaption>An offer of 100 TEST for 250 TUSD, and what taking it does.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What an OTC swap is</div>
+            <p class="claim">Trade two tokens with one person, both sides at once</p>
+            <p class="sub">
+              Over the counter: you agree a price with someone, put your side in a smart contract and send
+              them a link. When they take the offer, both sides change hands in the same transaction, or
+              nothing moves. No pool, no price that slips, and nobody has to pay first on trust.
+            </p>
+            <ul class="points">
+              <li>You say what you give, what you want for it, and until when the offer stands.</li>
+              <li>Name the one account that may take it, or let anyone with the link take it.</li>
+              <li>Until it is taken you can cancel it and get your tokens back, after it expires too.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <!-- The offer a link points to: what the visitor gives, what they get, and the button. -->
+        <section id="view" class="card trade" hidden>
+          <div class="row">
+            <h2 id="view-title">Offer</h2>
+            <span id="view-chip" class="chip"></span>
+          </div>
+          <div id="view-asof" class="asof"></div>
+          <div id="view-body"></div>
+        </section>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">
+                TEST and TUSD are tokens made for these demos. You have <b id="balance-test">—</b> and
+                <b id="balance-tusd">—</b>.
+              </p>
+              <div class="actions">
+                <button id="faucet-test" disabled>Get 1,000 TEST</button>
+                <button id="faucet-tusd" disabled>Get 1,000 TUSD</button>
+              </div>
+            </li>
+            <li id="step-make" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Make an offer, open its link</h3>
+              <p class="sub">
+                Offer TEST for TUSD below and open the link you get. Take it yourself to see it work with one
+                wallet, or use Switch above to take it as another account in your wallet.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <div class="stack">
+            <section class="card">
+              <h2>Make an offer</h2>
+              <div class="asof">You are the maker. What you give leaves your wallet now and waits in the contract.</div>
+              <form id="make">
+                <fieldset>
+                  <legend>You give</legend>
+                  <div class="options" data-side="give">
+                    <button type="button" class="small" data-token="test">TEST</button>
+                    <button type="button" class="small" data-token="tusd">TUSD</button>
+                    <button type="button" class="small" data-token="other">Another token</button>
+                  </div>
+                  <input id="f-give-token" class="mono" placeholder="hash-… of a CEP-18 token" hidden />
+                  <label>
+                    How much
+                    <span class="with-unit">
+                      <input id="f-give-amount" inputmode="decimal" placeholder="100" required />
+                      <span id="f-give-unit" class="unit">TEST</span>
+                    </span>
+                    <span id="f-give-hint" class="hint"></span>
+                  </label>
+                </fieldset>
+
+                <fieldset>
+                  <legend>You want for it</legend>
+                  <div class="options" data-side="want">
+                    <button type="button" class="small" data-token="test">TEST</button>
+                    <button type="button" class="small" data-token="tusd">TUSD</button>
+                    <button type="button" class="small" data-token="other">Another token</button>
+                  </div>
+                  <input id="f-want-token" class="mono" placeholder="hash-… of a CEP-18 token" hidden />
+                  <label>
+                    How much
+                    <span class="with-unit">
+                      <input id="f-want-amount" inputmode="decimal" placeholder="250" required />
+                      <span id="f-want-unit" class="unit">TUSD</span>
+                    </span>
+                    <span id="f-want-hint" class="hint"></span>
+                  </label>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Who may take it</legend>
+                  <div class="options">
+                    <button type="button" class="small" data-who="anyone">Anyone with the link</button>
+                    <button type="button" class="small" data-who="one">One account only</button>
+                  </div>
+                  <label id="f-taker-field" hidden>
+                    Their account
+                    <input id="f-taker" class="mono" placeholder="Public key or account-hash-…" />
+                    <span class="hint">Only this account can take the offer, even if the link reaches others.</span>
+                  </label>
+                </fieldset>
+
+                <fieldset>
+                  <legend>The offer stands for</legend>
+                  <div class="options">
+                    <button type="button" class="small" data-preset="10m">10 minutes</button>
+                    <button type="button" class="small" data-preset="1h">1 hour</button>
+                    <button type="button" class="small" data-preset="1d">1 day</button>
+                    <button type="button" class="small" data-preset="7d">7 days</button>
+                  </div>
+                  <label>
+                    Until
+                    <input id="f-expiry" type="datetime-local" step="1" required />
+                    <span class="hint"
+                      >After this nobody can take it. You can cancel it at any time until it is taken.</span
+                    >
+                  </label>
+                </fieldset>
+
+                <div class="callout">
+                  <div class="label">What will happen</div>
+                  <p id="summary"></p>
+                </div>
+
+                <p id="make-error" class="notice" hidden></p>
+                <button id="make-submit" class="primary big" disabled>Make the offer</button>
+                <p class="hint">
+                  Your wallet will ask twice: first to let the contract take your tokens, then to make the offer.
+                </p>
+              </form>
+            </section>
+
+            <section id="share" class="card" hidden>
+              <h2>Send the link</h2>
+              <div class="asof">Whoever opens it sees exactly what they give and what they get.</div>
+              <p id="share-text"></p>
+              <label>
+                Link to the offer
+                <input id="share-link" class="mono" readonly />
+              </label>
+              <div class="actions">
+                <button id="share-copy" type="button">Copy the link</button>
+                <a id="share-open" class="button">Open it</a>
+              </div>
+            </section>
+          </div>
+
+          <div class="stack">
+            <section class="card">
+              <div class="row">
+                <h2>Your offers</h2>
+                <div class="tabs" role="tablist">
+                  <button id="tab-maker" role="tab" class="tab active">Made by you</button>
+                  <button id="tab-taker" role="tab" class="tab">For you</button>
+                </div>
+              </div>
+              <div id="offers" class="list">
+                <p class="empty">Connect a wallet to see your offers.</p>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Open offers anyone can take</h2>
+              <div class="asof">Public offers that are not taken, cancelled or expired. No wallet needed to look.</div>
+              <div id="public" class="list"></div>
+              <form id="lookup" class="inline">
+                <input id="lookup-id" inputmode="numeric" placeholder="Offer number, e.g. 0" aria-label="Offer number" required />
+                <button>Open the offer</button>
+              </form>
+            </section>
+          </div>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

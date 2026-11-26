@@ -1,0 +1,52 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The offer a link opens: the two sides of the trade as a pair of figures, then the button. */
+.trade .body {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.trade .body .tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trade .body .notice,
+.trade .body .hint {
+  margin: 0;
+}
+
+/* The link card holds text, a field and buttons outside a form. */
+#share {
+  display: grid;
+  gap: 12px;
+}
+
+#share > h2,
+#share > .asof,
+#share > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* The field of another token sits under its options. */
+fieldset > input.mono {
+  margin-top: -4px;
+}
+
+/* The lookup form under the list of public offers. */
+#lookup {
+  margin-top: 16px;
+}

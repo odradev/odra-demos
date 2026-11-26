@@ -1,0 +1,8 @@
+[[contracts]]
+fqn = "swap::OtcSwap"
+
+[[contracts]]
+fqn = "token::TestToken"
+
+[[contracts]]
+fqn = "token::TestDollar"

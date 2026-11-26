@@ -1,0 +1,21 @@
+{
+  "name": "otc-swap-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "contracts": "node scripts/contracts.mjs",
+    "reader": "wasm-pack build --target web --out-dir pkg-web ../storage_reader",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "otc-swap-storage-reader": "file:../storage_reader/pkg-web",
+    "otc-swap-wasm-client": "file:../otc_swap_client/pkg-web"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0"
+  }
+}

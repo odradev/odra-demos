@@ -1,0 +1,16 @@
+last_updated = "2026-11-26T08:22:40Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "TestDollar"
+package_name = "TestDollar"
+package_hash = "hash-329d7b1f578c945dbd603ed7b7f2a3a0351024c82e4c5b2304fab94c58b30b13"
+
+[[contracts]]
+name = "OtcSwap"
+package_name = "OtcSwap"
+package_hash = "hash-02f41a155d7caf0074ca6be0057c03a7d11e9010ebc055923dbb56bc230cfe8d"
