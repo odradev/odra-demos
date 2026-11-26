@@ -1,0 +1,5 @@
+<svg viewBox="0 0 360 200" aria-hidden="true">
+  <circle class="area" cx="180" cy="100" r="78" />
+  <circle class="curve" cx="180" cy="100" r="78" />
+  <path class="curve" d="M142 102 L170 130 L220 74" />
+</svg>

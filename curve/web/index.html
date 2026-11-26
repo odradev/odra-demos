@@ -52,6 +52,11 @@
                 The price of a token against the number of tokens in existence: a straight line that rises with
                 every token sold. The shaded area up to the current supply is the CSPR the contract holds.
               </title>
+              <!-- Shown until the app draws the chart from the contract's state, and on the list of demos. -->
+              <path class="area" d="M52 196 V170 L180 124 V196 Z" />
+              <path class="axis" d="M52 30 V196 H386" />
+              <path class="curve" d="M52 170 L386 50" />
+              <circle class="point" cx="180" cy="124" r="5" />
             </svg>
             <figcaption id="chart-caption">The price of a token, by how many exist.</figcaption>
           </figure>

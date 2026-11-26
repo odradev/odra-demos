@@ -27,6 +27,46 @@
   flex-direction: column;
 }
 
+.app .head {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.app h2 {
+  font-size: 13px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* The app's own diagram, small and without labels, drawn with the diagram's colours. */
+.app .icon {
+  flex: 0 0 112px;
+}
+
+.app .icon svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.app .icon * {
+  vector-effect: non-scaling-stroke;
+}
+
+.app .icon .axis { fill: none; stroke: var(--border); stroke-width: 1; }
+.app .icon .guide { fill: none; stroke: var(--grid); stroke-width: 1; }
+.app .icon .area { fill: var(--data-odra-wash); }
+.app .icon .curve { fill: none; stroke: var(--data-odra); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.app .icon .point { fill: var(--surface); stroke: var(--data-odra); stroke-width: 1.5; }
+
+/* Marks some apps add to their diagram: a finished step, the two sides of a vote. */
+.app .icon .done,
+.app .icon .for { fill: var(--data-odra); }
+.app .icon .against { fill: var(--data-other); }
+
 .app .claim {
   font-size: 22px;
   line-height: 1.3;

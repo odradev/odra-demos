@@ -144,6 +144,11 @@ served at https://odra.dev/odra-demos/.
   the highest is listed first), directory name, name,
   the one-line claim of its headline block, a two-sentence summary and the package hash of its
   contract on the testnet. Nothing else has to change: the page and the workflow follow the list.
+- The picture on a project's card is the diagram of its headline block, taken from
+  `web/index.html` without its labels; the build fails when there is none. A diagram drawn at
+  run time needs static shapes in `index.html` for this (see `curve`). When a diagram says little
+  without labels, draw `site/icons/<slug>.svg` with the diagram's classes; the build uses it
+  instead.
 - Apps are served from a subdirectory (`/<project>/`), so every path in an app is relative
   (`base: "./"` in `vite.config.ts`, `./assets/...` in `index.html`) and nothing is fetched from
   the root of the host.

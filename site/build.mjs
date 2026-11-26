@@ -68,13 +68,39 @@ cpSync(join(root, "site/site.css"), join(out, "site.css"));
 // GitHub Pages runs Jekyll unless told not to; the site is plain files.
 writeFileSync(join(out, ".nojekyll"), "");
 
+// The picture of a card is the diagram of the app's headline block, without its labels: at this
+// size they would not be readable, and the name beside it says what it is. site/icons/<slug>.svg,
+// when it exists, is used instead; it is drawn with the classes of the diagram.
+function icon(project) {
+  // A diagram that says little without its labels is replaced by a drawing in site/icons/.
+  const own = join(root, "site/icons", `${project.slug}.svg`);
+  if (existsSync(own)) return readFileSync(own, "utf8").replace(/\s*\n\s*/g, " ").trim();
+  const html = readFileSync(join(root, project.slug, "web/index.html"), "utf8");
+  const svg = html.match(/<figure class="diagram[^"]*">\s*(<svg[\s\S]*?<\/svg>)/)?.[1];
+  if (!svg) throw new Error(`${project.slug}/web/index.html has no diagram in its headline block.`);
+  const shapes = svg
+    .replace(/<title[\s\S]*?<\/title>/g, "")
+    .replace(/<text[\s\S]*?<\/text>/g, "")
+    .replace(/^<svg[^>]*?(viewBox="[^"]*")[^>]*>/, '<svg $1 aria-hidden="true">')
+    .replace(/\s*\n\s*/g, " ");
+  if (!/<(path|rect|circle|line)/.test(shapes)) {
+    throw new Error(`${project.slug}: the diagram is empty in index.html; give it shapes to show before the app draws.`);
+  }
+  return shapes;
+}
+
 // Newest first (highest `order`): a returning reader looks for what was added.
 const cards = [...projects]
   .reverse()
   .map(
     (project) => `<section class="card app">
-          <h2>${escape(project.name)}</h2>
-          <p class="claim">${escape(project.claim)}</p>
+          <div class="head">
+            <div>
+              <h2>${escape(project.name)}</h2>
+              <p class="claim">${escape(project.claim)}</p>
+            </div>
+            <div class="icon">${icon(project)}</div>
+          </div>
           <p class="summary">${escape(project.summary)}</p>
           <div class="actions">
             <a class="button primary" href="./${escape(project.slug)}/">Open the app</a>
