@@ -18,6 +18,11 @@ Each demo is something the Casper ecosystem was missing: a token tool, a DeFi bu
 | [Crowdfunding](crowdfunding/) | Campaigns with a goal and a deadline: the creator claims if the goal is met, backers take their pledges back if not. Comes with a web app. |
 | [Airdrop](airdrop/) | Funds a list of recipients under one Merkle root; each recipient claims their own amount with a proof. Comes with a web app. |
 | [Governor](governor/) | Token holders vote on a change; one that passes is queued in the timelock and executed after its delay. Comes with a web app. |
+| [NFT auction](auction/) | Auctions a CEP-95 NFT for CSPR: bidders outbid each other, outbid bidders take their CSPR back, and at the end the winner gets the NFT and the seller the CSPR. Comes with a web app. |
+| [OTC swap](swap/) | Two parties swap two CEP-18 tokens at an agreed price in one transaction: the maker's tokens wait in the contract until the taker sends what they asked for, or the maker cancels. Comes with a web app. |
+| [Attestations](attestations/) | Issuers record statements about accounts (passed KYC, took part in a hackathon) with an optional expiry and revoking; any app or contract checks them with `is_valid`. Comes with a web app. |
+| [Token sale](sale/) | Sells a CEP-18 token for CSPR at a fixed price, with a cap, a limit per wallet, a time window and an optional allowlist. Comes with a web app. |
+| [Bonding curve](curve/) | A CEP-18 token that sells itself: buyers pay CSPR at a price that rises with the supply, and sell back to the reserve at the price on the line. Comes with a web app. |
 
 ## Layout
 

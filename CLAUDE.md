@@ -19,6 +19,17 @@ reference for how a project is laid out; copy its structure for a new one.
 
 - Entry points that change state return nothing. `cargo odra generate-client` rejects a mutable
   entry point with a return value; put the value in an event instead.
+- Keep a growing list of ids per account as `Mapping<Address, List<u64>>`, not as a `Vec` in a
+  `Mapping`: the `Vec` is rewritten whole on every push (6.9 CSPR for one call after 500 entries,
+  against 1.64 CSPR with a `List`). The older demos still use the `Vec`.
+- CEP-18 `transfer_from` reverts with `CannotTargetSelfUser` when owner and recipient are the
+  same account. A contract that pays one party from another's allowance has to decide what happens
+  when one account plays both parts, or the one-key demo cannot run.
+- An event with 8 or more fields makes clippy warn about the constructor `#[odra::event]`
+  generates; an allow on the struct does not reach it. Put
+  `#![allow(clippy::too_many_arguments)]` at the top of the module.
+- `cargo odra new` adds `AGENTS.md`, `CLAUDE.md` and `CHANGELOG.md` to a project. Delete them;
+  the demos do not keep them.
 
 ## Networks
 
@@ -40,7 +51,20 @@ reference for how a project is laid out; copy its structure for a new one.
   share the scratchpad directory too: each agent keeps its files in a subdirectory of its own.
 - To measure: end a test with `println!("{}", env.gas_report())` and run
   `cargo odra test -b casper -s <test> -- --nocapture` after `cargo odra build` (`-s` keeps the
-  built wasm). Deploy gas grows with the wasm: 281 to 312 CSPR for the contracts here.
+  built wasm). Deploy gas grows with the wasm: 281 CSPR for the smallest contract here, 383 CSPR
+  for the 359 KB bonding curve (U512 arithmetic adds about 60 KB), so 400 CSPR is not a safe
+  limit for every contract.
+- CasperVM overstates payable calls, which go through the proxy session that carries the CSPR:
+  7.40 CSPR measured against 4.73 on the testnet for the sale's `buy`, 6.60 against 3.92 for the
+  curve's. Deploys and calls that attach nothing match to the mote. Take the limit of a payable
+  call from the testnet demo run.
+- A contract that sends CSPR out pays about 2.5 to 3 CSPR for it, so the usual 2.5 CSPR limit is
+  too low for a withdrawal.
+- A second test token is deployed on the testnet for demos that need two: `TestDollar` (TUSD,
+  6 decimals), `hash-329d7b1f578c945dbd603ed7b7f2a3a0351024c82e4c5b2304fab94c58b30b13`, recorded
+  in `swap/resources/casper-test-contracts.toml`.
+- In the host-only `demo` module `env.advance_block_time` sleeps on a live network and moves the
+  clock on CasperVM, so one scenario can wait out a deadline in both.
 - Keep the demo scenario in a host-only module (`#[cfg(not(target_arch = "wasm32"))] pub mod demo`)
   that both the CLI and a CasperVM test call, so the sequence sent to the testnet is the proven one.
 - To reuse a contract that is already deployed, load it with `container.contract_ref` in the deploy
@@ -63,7 +87,14 @@ a node that serves speculative execution.
 - `read` takes a dotted path of storage field names (`token.balances`) and one key per mapping on
   the path, in the odra-cli text format (`account-hash-…`, `5`, `owner:spender`). It returns the
   value as odra-cli prints it (a struct is a JSON object of strings, a key is `Key::Account(…)`),
-  or `null` for a value that was never written.
+  or `null` for a value that was never written. An `Option` prints as its inner value or `None`,
+  a map as `k:v, k:v`.
+- An item of a `List` inside a `Mapping` is read with the keys `[account, "<index>"]`. The length
+  cannot be read: read in batches and stop at the first `null`.
+- To learn the id of an item a transaction just created, read the last entry of the account's own
+  list afterwards. A count read before the call can be taken by someone else's transaction.
+- Odra's CEP-95 module keeps its data in dictionaries with standard names, so one schema reads
+  the owner and metadata of an NFT from any CEP-95 contract (`token.owners`).
 - Only stored values can be read. Compute anything a view entry point derives (a vested amount
   from a schedule and the time) in the app, with the same formula as the contract, and design the
   storage so the app can read what it shows: keep lists of ids per account rather than values that
@@ -122,6 +153,9 @@ served at https://odra.dev/odra-demos/.
   registered for odra.dev when served from there and `csprclick-template` on localhost; copy the
   `clickSDKOptions` block of `vesting/web/index.html` as it is. With the wrong id the SDK fails
   at start (`e.menu_items is undefined`) and the wallet cannot connect.
+- Agents working in parallel must not check their pages in the user's Chrome: they share its tabs
+  and navigate each other's away. Use a headless browser with a profile of its own
+  (`chromium-browser --headless=new --user-data-dir=<own scratch directory>`).
 - Check the result as Pages will serve it: `node site/build.mjs`, serve the parent of `_site/`
   so the site sits under a path, and open an app through the list.
 

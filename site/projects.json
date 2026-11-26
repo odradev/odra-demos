@@ -78,5 +78,45 @@
     "claim": "Token holders decide, a timelock carries it out",
     "summary": "Holders of a test token vote on a new fee by depositing their tokens for or against it, and take them back when the vote ends. A fee that passes is handed to the timelock demo's timelock, which sets it after its public one-minute delay.",
     "contract": "hash-cc5d0ab12e6b67ccda360f296a45915bd43860026482c6ca6b1e454650f0cab5"
+  },
+  {
+    "order": 11,
+    "slug": "auction",
+    "name": "NFT auction",
+    "claim": "Sell an NFT to whoever bids the most",
+    "summary": "Put an NFT up with a lowest price and an end time, and bidders outbid each other in CSPR until it ends; a bid in the last five minutes adds time. An outbid bidder takes their CSPR back whenever they like, and at the end the winner gets the NFT and the seller the highest bid.",
+    "contract": "hash-1d5a7032efbdaabcfde3558168f8e2ae46c098376fef084f77df65d0419c8b0f"
+  },
+  {
+    "order": 12,
+    "slug": "swap",
+    "name": "OTC swap",
+    "claim": "Trade two tokens with one person, both sides at once",
+    "summary": "Put the tokens you give in a contract, say what you want for them and send the link. Whoever takes the offer pays you and gets your tokens in the same transaction, or nothing moves; until then you can cancel.",
+    "contract": "hash-02f41a155d7caf0074ca6be0057c03a7d11e9010ebc055923dbb56bc230cfe8d"
+  },
+  {
+    "order": 13,
+    "slug": "attestations",
+    "name": "Attestations",
+    "claim": "Vouch for an account on chain, and let any app or contract check it",
+    "summary": "An issuer records a short statement about an account, such as \"passed KYC\" or \"took part in the hackathon\", with an optional end date, and can revoke it. Anyone can look an account up, and another contract can ask the registry whether a statement holds before it lets the account in.",
+    "contract": "hash-718896420f2a07104799522c1c93c356ccbcc050771375d5cf2f5dbef0aef900"
+  },
+  {
+    "order": 14,
+    "slug": "sale",
+    "name": "Token sale",
+    "claim": "Sell your token for CSPR at one fixed price, to everyone or only to a list",
+    "summary": "Put CEP-18 tokens on sale at a fixed price in CSPR, with a cap, a limit per wallet and a window when buying is open, optionally only for the accounts of a list. Buyers send CSPR and get the tokens in the same transaction; you take out the CSPR at any time and what is unsold after the close.",
+    "contract": "hash-82a8af35e16c28cc7c2bf8f07e608783f57c8882b6bc9116f3c2513023d656b1"
+  },
+  {
+    "order": 15,
+    "slug": "curve",
+    "name": "Bonding curve",
+    "claim": "A token that sells itself, at a price that rises with every sale",
+    "summary": "Pay CSPR and the contract mints you tokens at a price that rises along a straight line with every token in existence. Sell them back whenever you like: the contract burns them and pays you from the reserve the buyers paid in.",
+    "contract": "hash-6ad107591383e6ac2906df5d989b0b5444dc0b340009216a1d4446533640490b"
   }
 ]
