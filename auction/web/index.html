@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NFT Auction on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper NFT Auction",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <a href="../" title="All the demos"
+            ><img src="./assets/odra-logo-white.png" alt="Odra: all the demos" width="110" height="32"
+          /></a>
+          <span class="sep"></span>
+          <h1>NFT Auction</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                The highest bid over time: it starts at the minimum bid and steps up with every bid. A bid just
+                before the end moves the end later. The highest bid at the end wins.
+              </title>
+              <path class="area" d="M70 170 V130 H130 V108 H200 V88 H255 V58 H320 V170 Z" />
+              <path class="axis" d="M40 20 V170 H340" />
+              <path class="guide" d="M270 170 V40 M320 170 V58" />
+              <path class="curve" d="M70 130 H130 V108 H200 V88 H255 V58 H320" />
+              <circle class="point" cx="70" cy="130" r="4" />
+              <circle class="point" cx="130" cy="108" r="4" />
+              <circle class="point" cx="200" cy="88" r="4" />
+              <circle class="point" cx="255" cy="58" r="4" />
+              <text x="40" y="190" text-anchor="middle">Start</text>
+              <text x="270" y="190" text-anchor="middle">End</text>
+              <text x="324" y="190" text-anchor="middle">Moved</text>
+              <text x="28" y="134" text-anchor="end">Min</text>
+              <text x="255" y="46" text-anchor="end">late bid</text>
+              <text x="150" y="160" text-anchor="middle">highest bid</text>
+            </svg>
+            <figcaption>The highest bid steps up with every bid; a late bid moves the end.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What an auction is</div>
+            <p class="claim">Sell an NFT to whoever bids the most</p>
+            <p class="sub">
+              You put an NFT up with a lowest price and an end time. Bidders outbid each other in CSPR, each
+              bid at least <b>5% above</b> the last. When the time is up, the highest bidder gets the NFT and
+              you get their CSPR.
+            </p>
+            <ul class="points">
+              <li>The NFT and every bid sit in a smart contract until the auction is settled.</li>
+              <li>Outbid? Take your CSPR back whenever you like, even before the end.</li>
+              <li>A bid in the last 5 minutes moves the end 5 minutes later, so nobody wins by sniping.</li>
+              <li>Anyone can settle an auction that has ended. With no bids, the NFT goes back to the seller.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet, with some test CSPR to bid.</p>
+            </li>
+            <li id="step-mint" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Mint a free test NFT</h3>
+              <p class="sub">TNFT is an NFT collection made for this demo. You own <b id="owned">—</b>.</p>
+            </li>
+            <li id="step-sell" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Auction it, or bid on someone else's</h3>
+              <p class="sub">
+                Put your NFT up for 10 minutes, or bid in an auction below. When it ends, settle it.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <div class="stack">
+            <section class="card">
+              <h2>Mint a test NFT</h2>
+              <div class="asof">Free, apart from the gas. It is yours to auction.</div>
+              <form id="mint" class="inline">
+                <input id="mint-name" maxlength="40" placeholder="A name, e.g. Sunrise over the Odra" required />
+                <button id="mint-submit" disabled>Mint</button>
+              </form>
+              <p id="mint-error" class="notice" hidden></p>
+            </section>
+
+            <section class="card">
+              <h2>Put an NFT up for auction</h2>
+              <div class="asof">The NFT leaves your wallet now and goes to the highest bidder at the end.</div>
+              <form id="create">
+                <fieldset>
+                  <legend>Which NFT</legend>
+                  <div id="f-nfts" class="options">
+                    <span class="hint">Connect a wallet to see your test NFTs.</span>
+                  </div>
+                  <details id="f-other">
+                    <summary>Use an NFT of another collection</summary>
+                    <label>
+                      NFT contract
+                      <input id="f-nft" class="mono" placeholder="hash-… of a CEP-95 contract" />
+                    </label>
+                    <label>
+                      Token id
+                      <input id="f-token-id" inputmode="numeric" placeholder="0" />
+                      <span class="hint">Leave both empty to auction the test NFT chosen above.</span>
+                    </label>
+                  </details>
+                </fieldset>
+
+                <label>
+                  Lowest first bid
+                  <span class="with-unit">
+                    <input id="f-min-bid" inputmode="decimal" value="1" required />
+                    <span class="unit">CSPR</span>
+                  </span>
+                  <span class="hint">Nobody can buy it for less.</span>
+                </label>
+
+                <fieldset>
+                  <legend>How long it runs</legend>
+                  <div class="options">
+                    <button type="button" class="small" data-preset="10">10 minutes</button>
+                    <button type="button" class="small" data-preset="60">1 hour</button>
+                    <button type="button" class="small" data-preset="1440">1 day</button>
+                    <button type="button" class="small" data-preset="10080">7 days</button>
+                  </div>
+                  <label>
+                    End
+                    <input id="f-end" type="datetime-local" step="1" required />
+                    <span class="hint">At most 30 days away. A bid in the last 5 minutes moves it later.</span>
+                  </label>
+                </fieldset>
+
+                <div class="callout">
+                  <div class="label">What will happen</div>
+                  <p id="summary"></p>
+                </div>
+
+                <p id="create-error" class="notice" hidden></p>
+                <button id="create-submit" class="primary big" disabled>Put up for auction</button>
+                <p class="hint">
+                  Your wallet will ask twice: first to let the contract take the NFT, then to start the auction.
+                </p>
+              </form>
+            </section>
+          </div>
+
+          <section class="card">
+            <div class="row">
+              <h2>Auctions</h2>
+              <div class="tabs" role="tablist">
+                <button id="tab-all" role="tab" class="tab active">All</button>
+                <button id="tab-bids" role="tab" class="tab">My bids</button>
+                <button id="tab-selling" role="tab" class="tab">Selling</button>
+              </div>
+            </div>
+            <div id="auctions" class="list">
+              <p class="empty">Loading…</p>
+            </div>
+            <button id="more" hidden>Show older auctions</button>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

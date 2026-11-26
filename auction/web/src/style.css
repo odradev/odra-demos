@@ -1,0 +1,23 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The bid field of an auction and the rule under it. */
+.item .bid {
+  display: grid;
+  gap: 6px;
+}
+
+.item .bid .hint {
+  margin: 0;
+}

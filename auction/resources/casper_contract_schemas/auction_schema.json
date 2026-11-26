@@ -1,0 +1,553 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Auction",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "AuctionCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "auction_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "seller",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "nft",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token_id",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "min_bid",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "AuctionSettled",
+        "description": null,
+        "members": [
+          {
+            "name": "auction_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "seller",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "winner",
+            "description": null,
+            "ty": {
+              "Option": "Key"
+            }
+          },
+          {
+            "name": "price",
+            "description": null,
+            "ty": "U512"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "BidPlaced",
+        "description": null,
+        "members": [
+          {
+            "name": "auction_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "bidder",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Lot",
+        "description": null,
+        "members": [
+          {
+            "name": "seller",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "nft",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token_id",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "min_bid",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "highest_bid",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "highest_bidder",
+            "description": null,
+            "ty": {
+              "Option": "Key"
+            }
+          },
+          {
+            "name": "bids",
+            "description": null,
+            "ty": "U32"
+          },
+          {
+            "name": "settled",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Withdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "auction_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "bidder",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U512"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadySettled",
+      "description": "The auction was settled already.",
+      "discriminant": 9
+    },
+    {
+      "name": "AuctionEnded",
+      "description": "The auction has ended: it takes no more bids.",
+      "discriminant": 6
+    },
+    {
+      "name": "AuctionNotEnded",
+      "description": "The auction has not ended yet.",
+      "discriminant": 8
+    },
+    {
+      "name": "AuctionNotFound",
+      "description": "No auction has this id.",
+      "discriminant": 5
+    },
+    {
+      "name": "BidTooLow",
+      "description": "The bid is lower than the minimum bid, or does not beat the highest bid by enough.",
+      "discriminant": 7
+    },
+    {
+      "name": "DurationTooLong",
+      "description": "The end is more than `MAX_DURATION` away.",
+      "discriminant": 3
+    },
+    {
+      "name": "EndNotInFuture",
+      "description": "The end is not in the future.",
+      "discriminant": 2
+    },
+    {
+      "name": "NftNotReceived",
+      "description": "The NFT contract did not hand the NFT over to the auction.",
+      "discriminant": 4
+    },
+    {
+      "name": "NothingToWithdraw",
+      "description": "The caller has no outbid stake to take back in this auction.",
+      "discriminant": 10
+    },
+    {
+      "name": "ZeroMinBid",
+      "description": "The minimum bid is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_auction",
+      "description": "Puts the NFT `token_id` of the CEP-95 contract `nft` up for auction, with bids from `min_bid` motes until `end`, in milliseconds since the Unix epoch. The NFT is pulled from the caller, who must have approved this contract for it. The caller is the seller. The id of the auction is the value `auctions_count` returned before the call; the `AuctionCreated` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "nft",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "token_id",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "min_bid",
+          "description": null,
+          "ty": "U512",
+          "optional": false
+        },
+        {
+          "name": "end",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "bid",
+      "description": "Bids the CSPR attached to the call. The bid must be at least the minimum bid and beat the highest bid by `MIN_STEP_PERCENT` (`min_next_bid` says how much that is). The bid it beats becomes the stake of its bidder, who takes it back with `withdraw`. A bid less than `EXTENSION` before the end moves the end to `EXTENSION` after the bid.",
+      "is_mutable": true,
+      "is_payable": true,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "__cargo_purse",
+          "description": null,
+          "ty": "URef",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw",
+      "description": "Sends the caller every outbid bid of theirs in the auction. Allowed at any time.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "settle",
+      "description": "Ends the auction once its end has passed: the NFT goes to the highest bidder and the highest bid to the seller, or the NFT back to the seller if nobody bid. Anyone may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "auction",
+      "description": "Returns the auction with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Lot",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "min_next_bid",
+      "description": "Returns the lowest bid the auction accepts now, in motes.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "U512",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "auctions_count",
+      "description": "Returns the number of auctions created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "auctions_of_seller",
+      "description": "Returns the ids of the auctions `seller` created.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "seller",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "auctions_of_bidder",
+      "description": "Returns the ids of the auctions `bidder` bid in.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "bidder",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdrawable",
+      "description": "Returns the outbid CSPR `bidder` can take back from the auction, in motes.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "auction_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "bidder",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U512",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "AuctionCreated",
+      "ty": "AuctionCreated"
+    },
+    {
+      "name": "AuctionSettled",
+      "ty": "AuctionSettled"
+    },
+    {
+      "name": "BidPlaced",
+      "ty": "BidPlaced"
+    },
+    {
+      "name": "Withdrawn",
+      "ty": "Withdrawn"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Auction.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "auctions",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Lot"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "by_seller",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "by_bidder",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      },
+      {
+        "name": "pending_returns",
+        "index": 5,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U512"
+        }
+      }
+    ]
+  }
+}

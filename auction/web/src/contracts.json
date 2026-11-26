@@ -1,0 +1,13 @@
+{
+  "last_updated": "2026-11-26T08:20:24Z",
+  "contracts": [
+    {
+      "name": "Auction",
+      "package_hash": "hash-1d5a7032efbdaabcfde3558168f8e2ae46c098376fef084f77df65d0419c8b0f"
+    },
+    {
+      "name": "TestNft",
+      "package_hash": "hash-9d7da7ab0c344d6882115cf03ffc39c63058b19614cd4ec1f310152c988b7626"
+    }
+  ]
+}

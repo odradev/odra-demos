@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "auction::Auction"
+
+[[contracts]]
+fqn = "nft::TestNft"
