@@ -1,0 +1,160 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "Club",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Joined",
+        "description": null,
+        "members": [
+          {
+            "name": "member",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyMember",
+      "description": "The caller is a member already.",
+      "discriminant": 101
+    },
+    {
+      "name": "NotAttested",
+      "description": "The caller has no valid attestation of the schema the club requires.",
+      "discriminant": 100
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "join",
+      "description": "Makes the caller a member, if the registry holds a valid attestation of the schema about them. Membership stays when the attestation later expires or is revoked: the check is made once, at the door.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "is_member",
+      "description": "Whether `account` has joined.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "account",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Bool",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "members_count",
+      "description": "How many accounts have joined.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U32",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "Joined",
+      "ty": "Joined"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "Club.wasm",
+    "description": "Sets the registry to ask and the schema to require.",
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "registry",
+        "description": null,
+        "ty": "Key",
+        "optional": false
+      },
+      {
+        "name": "schema_id",
+        "description": null,
+        "ty": "U64",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "registry",
+        "index": 1,
+        "kind": "value",
+        "ty": "Key"
+      },
+      {
+        "name": "schema_id",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "members",
+        "index": 3,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": "Bool"
+        }
+      },
+      {
+        "name": "count",
+        "index": 4,
+        "kind": "value",
+        "ty": "U32"
+      }
+    ]
+  }
+}

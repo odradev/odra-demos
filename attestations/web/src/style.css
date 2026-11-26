@@ -1,0 +1,38 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The note an issuer left on a statement, in its own words. */
+.item .note {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The counts of a lookup, above its statements. */
+#found-tiles {
+  margin-top: 16px;
+}
+
+#lookup-hint {
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+#a-schemas:empty {
+  display: none;
+}
+
+/* An address in the card title keeps its case. */
+#found-title span {
+  text-transform: none;
+}

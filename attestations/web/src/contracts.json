@@ -1,0 +1,9 @@
+{
+  "last_updated": "2026-11-26T08:22:56Z",
+  "contracts": [
+    {
+      "name": "AttestationRegistry",
+      "package_hash": "hash-718896420f2a07104799522c1c93c356ccbcc050771375d5cf2f5dbef0aef900"
+    }
+  ]
+}

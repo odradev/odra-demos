@@ -1,0 +1,600 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "AttestationRegistry",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "Attestation",
+        "description": null,
+        "members": [
+          {
+            "name": "schema_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "issuer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "subject",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "data",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "issued_at",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "expires",
+            "description": null,
+            "ty": {
+              "Option": "U64"
+            }
+          },
+          {
+            "name": "revoked",
+            "description": null,
+            "ty": "Bool"
+          },
+          {
+            "name": "revoked_at",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Attested",
+        "description": null,
+        "members": [
+          {
+            "name": "attestation_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "schema_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "issuer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "subject",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "data",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "expires",
+            "description": null,
+            "ty": {
+              "Option": "U64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Revoked",
+        "description": null,
+        "members": [
+          {
+            "name": "attestation_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "schema_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "issuer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "subject",
+            "description": null,
+            "ty": "Key"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Schema",
+        "description": null,
+        "members": [
+          {
+            "name": "issuer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "name",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "revocable",
+            "description": null,
+            "ty": "Bool"
+          },
+          {
+            "name": "attestations",
+            "description": null,
+            "ty": "U64"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "SchemaRegistered",
+        "description": null,
+        "members": [
+          {
+            "name": "schema_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "issuer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "name",
+            "description": null,
+            "ty": "String"
+          },
+          {
+            "name": "revocable",
+            "description": null,
+            "ty": "Bool"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "AlreadyRevoked",
+      "description": "The attestation has been revoked already.",
+      "discriminant": 9
+    },
+    {
+      "name": "AttestationNotFound",
+      "description": "No attestation has this id.",
+      "discriminant": 6
+    },
+    {
+      "name": "DataTooLong",
+      "description": "The data of an attestation is longer than `MAX_DATA_LENGTH` bytes.",
+      "discriminant": 3
+    },
+    {
+      "name": "EmptyName",
+      "description": "The name of a schema is empty.",
+      "discriminant": 1
+    },
+    {
+      "name": "ExpiryInPast",
+      "description": "The expiry is not after the current block time.",
+      "discriminant": 4
+    },
+    {
+      "name": "NameTooLong",
+      "description": "The name of a schema is longer than `MAX_NAME_LENGTH` bytes.",
+      "discriminant": 2
+    },
+    {
+      "name": "NotIssuer",
+      "description": "Only the issuer of the schema may do this.",
+      "discriminant": 7
+    },
+    {
+      "name": "NotRevocable",
+      "description": "The schema was registered as not revocable.",
+      "discriminant": 8
+    },
+    {
+      "name": "SchemaNotFound",
+      "description": "No schema has this id.",
+      "discriminant": 5
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "register_schema",
+      "description": "Registers a schema with the caller as its issuer. Its id is the value `schemas_count` returned before the call; the `SchemaRegistered` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "name",
+          "description": null,
+          "ty": "String",
+          "optional": false
+        },
+        {
+          "name": "revocable",
+          "description": null,
+          "ty": "Bool",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "attest",
+      "description": "Attests under `schema_id` about `subject`. Only the issuer of the schema may call it. `expires` is a block time in milliseconds after which the attestation no longer holds, or `None` for never. The new attestation becomes the current one of the schema about the subject, the one `is_valid` checks: attesting again replaces an older statement, for example to renew it. Its id is the value `attestations_count` returned before the call; the `Attested` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schema_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "subject",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "data",
+          "description": null,
+          "ty": "String",
+          "optional": false
+        },
+        {
+          "name": "expires",
+          "description": null,
+          "ty": {
+            "Option": "U64"
+          },
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "revoke",
+      "description": "Revokes an attestation. Only the issuer may call it, and only under a revocable schema.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "attestation_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "is_valid",
+      "description": "Whether the current attestation of `schema_id` about `subject` holds: it exists, it is not revoked and it has not expired. False for a schema that does not exist. Meant to be called by other contracts.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schema_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "subject",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "Bool",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schema",
+      "description": "Returns the schema with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schema_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Schema",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "attestation",
+      "description": "Returns the attestation with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "attestation_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Attestation",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "current_attestation",
+      "description": "Returns the id of the current attestation of `schema_id` about `subject`, if there is one.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "schema_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "subject",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "Option": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schemas_count",
+      "description": "Returns the number of schemas. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "attestations_count",
+      "description": "Returns the number of attestations. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "attestations_of_subject",
+      "description": "Returns the ids of the attestations about `subject`, oldest first.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "subject",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "attestations_of_issuer",
+      "description": "Returns the ids of the attestations `issuer` made, oldest first.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "issuer",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "schemas_of_issuer",
+      "description": "Returns the ids of the schemas `issuer` registered, oldest first.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "issuer",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "Attested",
+      "ty": "Attested"
+    },
+    {
+      "name": "Revoked",
+      "ty": "Revoked"
+    },
+    {
+      "name": "SchemaRegistered",
+      "ty": "SchemaRegistered"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "AttestationRegistry.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "schemas",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Schema"
+        }
+      },
+      {
+        "name": "schema_count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "attestations",
+        "index": 3,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Attestation"
+        }
+      },
+      {
+        "name": "attestation_count",
+        "index": 4,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "current",
+        "index": 5,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U64"
+        }
+      },
+      {
+        "name": "by_subject",
+        "index": 6,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "list",
+          "item": "U64"
+        }
+      },
+      {
+        "name": "by_issuer",
+        "index": 7,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "list",
+          "item": "U64"
+        }
+      },
+      {
+        "name": "schemas_by_issuer",
+        "index": 8,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "list",
+          "item": "U64"
+        }
+      }
+    ]
+  }
+}

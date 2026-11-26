@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attestations on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Attestations",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <a href="../" title="All the demos"
+            ><img src="./assets/odra-logo-white.png" alt="Odra: all the demos" width="110" height="32"
+          /></a>
+          <span class="sep"></span>
+          <h1>Attestations</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 170" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                A time line. A statement holds from the moment its issuer makes it until the moment it expires;
+                after that it no longer counts. Today falls inside, so a check says yes.
+              </title>
+              <path class="axis" d="M20 120 H340" />
+              <path class="guide" d="M180 40 V120" />
+              <path class="curve" d="M50 90 H270" />
+              <path class="guide" d="M270 90 H330" />
+              <circle class="point" cx="50" cy="90" r="6" />
+              <circle class="point" cx="270" cy="90" r="6" />
+              <circle class="point" cx="180" cy="90" r="4" />
+              <text x="50" y="140" text-anchor="middle">Attested</text>
+              <text x="270" y="140" text-anchor="middle">Expires</text>
+              <text x="180" y="32" text-anchor="middle">Today: is it valid? Yes</text>
+              <text x="160" y="80" text-anchor="middle">holds</text>
+              <text x="305" y="80" text-anchor="middle">expired</text>
+            </svg>
+            <figcaption>The issuer can also revoke it: then it stops holding at once.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What an attestation is</div>
+            <p class="claim">Vouch for an account on chain, and let any app or contract check it</p>
+            <p class="sub">
+              An <b>issuer</b> records a short statement about an account, such as "passed KYC" or "took part in
+              the hackathon". Anyone can read it, and another contract can ask the registry whether it holds
+              before it lets the account in. The issuer can give it an end date, and take it back if the kind of
+              statement allows that.
+            </p>
+            <ul class="points">
+              <li>A kind of statement is a <b>schema</b>. Whoever registers one is its only issuer.</li>
+              <li>A statement is valid until it expires or is revoked. Attesting again replaces it.</li>
+              <li>No tokens: a statement costs only the fee of one transaction, about 2 CSPR.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">
+            Everything here runs on the testnet. Nothing costs real money; free testnet CSPR comes from the
+            <a href="https://testnet.cspr.live/tools/faucet" target="_blank" rel="noopener noreferrer">faucet</a>.
+          </div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet, with a few CSPR for fees.</p>
+            </li>
+            <li id="step-schema" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Register a kind of statement</h3>
+              <p class="sub">Name it. You become the only account that can attest under it.</p>
+              <button id="example">Fill in an example</button>
+            </li>
+            <li id="step-attest" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Attest about yourself, then revoke it</h3>
+              <p class="sub">Your statement shows up under "About you", valid. Revoke it and watch it change.</p>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Look up an account</h2>
+            <div class="asof">Every statement is public. No wallet needed.</div>
+            <form id="lookup" class="inline">
+              <input
+                id="l-account"
+                class="mono"
+                spellcheck="false"
+                placeholder="Public key, account-hash-… or name.cspr"
+                aria-label="Account to look up"
+              />
+              <button id="l-submit">Look up</button>
+            </form>
+            <p id="lookup-hint" class="hint">
+              The page works out whether each statement holds now, by the same rule as the contract.
+            </p>
+          </section>
+
+          <section class="card">
+            <h2 id="found-title">Statements about an account</h2>
+            <div id="found-asof" class="asof">Look an account up to see what has been said about it.</div>
+            <div id="found-tiles" class="tiles" hidden></div>
+            <div id="found" class="list"></div>
+          </section>
+        </div>
+
+        <div class="split">
+          <div class="stack">
+            <section class="card">
+              <h2>Register a schema</h2>
+              <div class="asof">A kind of statement. You will be its only issuer, and that cannot change.</div>
+              <form id="schema">
+                <label>
+                  What it says
+                  <input id="s-name" maxlength="64" placeholder="e.g. Took part in the Odra hackathon" />
+                  <span id="s-name-hint" class="hint">Up to 64 bytes. Everyone sees it.</span>
+                </label>
+                <label class="check">
+                  <input id="s-revocable" type="checkbox" checked />
+                  <span>
+                    I can revoke what I attest under it
+                    <span class="hint">
+                      Without this, a statement stays until it expires. Apps that check it may trust that more.
+                    </span>
+                  </span>
+                </label>
+                <p id="schema-error" class="notice" hidden></p>
+                <button id="schema-submit" class="primary big" disabled>Register the schema</button>
+                <p class="hint">
+                  The network takes up to 2.5 CSPR as a fee and refunds three quarters of what is not used: about
+                  1.3 CSPR.
+                </p>
+              </form>
+            </section>
+
+            <section class="card">
+              <h2>Attest</h2>
+              <div class="asof">A statement under one of your schemas, about any account.</div>
+              <form id="attest">
+                <fieldset>
+                  <legend>Under the schema</legend>
+                  <div id="a-schemas" class="options"></div>
+                  <p id="a-schemas-empty" class="hint">Register a schema first; yours will be listed here.</p>
+                </fieldset>
+                <label>
+                  About the account
+                  <input
+                    id="a-subject"
+                    class="mono"
+                    spellcheck="false"
+                    placeholder="Public key, account-hash-…, hash-… or name.cspr"
+                  />
+                  <span class="hint">
+                    <button id="a-me" type="button" class="small">Me</button>
+                    <span id="a-subject-info"></span>
+                  </span>
+                </label>
+                <label>
+                  Note
+                  <input id="a-data" maxlength="128" placeholder="Optional, e.g. level 2, or a reference" />
+                  <span class="hint">Up to 128 bytes. Public, like everything on chain: no personal data.</span>
+                </label>
+                <fieldset>
+                  <legend>Valid until</legend>
+                  <div class="options">
+                    <button type="button" class="small" data-expiry="none">For ever</button>
+                    <button type="button" class="small" data-expiry="10m">10 minutes</button>
+                    <button type="button" class="small" data-expiry="30d">30 days</button>
+                    <button type="button" class="small" data-expiry="1y">A year</button>
+                  </div>
+                  <label>
+                    Expires
+                    <input id="a-expires" type="datetime-local" step="1" />
+                    <span class="hint">Empty for never.</span>
+                  </label>
+                </fieldset>
+                <div class="callout">
+                  <div class="label">What will happen</div>
+                  <p id="attest-summary"></p>
+                </div>
+                <p id="attest-error" class="notice" hidden></p>
+                <button id="attest-submit" class="primary big" disabled>Attest</button>
+                <p class="hint">
+                  The network takes up to 2.5 CSPR as a fee and refunds three quarters of what is not used: about
+                  1.9 CSPR.
+                </p>
+              </form>
+            </section>
+          </div>
+
+          <section class="card">
+            <div class="row">
+              <h2>Yours</h2>
+              <div class="tabs" role="tablist">
+                <button id="tab-about" role="tab" class="tab active" data-tab="about">About you</button>
+                <button id="tab-issued" role="tab" class="tab" data-tab="issued">Issued by you</button>
+                <button id="tab-schemas" role="tab" class="tab" data-tab="schemas">Your schemas</button>
+              </div>
+            </div>
+            <div id="mine" class="list"><p class="empty">Connect a wallet to see your statements.</p></div>
+          </section>
+        </div>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
