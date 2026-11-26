@@ -1,0 +1,49 @@
+{
+  "about": "Written by `npm run vector` in web/ from src/merkle.ts; checked by the tests of src/merkle.rs.",
+  "list": [
+    {
+      "address": "account-hash-2ccbc1dd4b1d1e7a3bc8c9cbbd2d1dd4fc4ef8b84ea6c1b4ea72a41f1e9c11c1",
+      "leaf": "a235e539d14a23acd6c6623172b945ebb9b3fe478df287d49e5de95c832332f3",
+      "proof": [
+        "89043b0f96c5b52c751dd2fd56e744e550512db56c67023ef8fc639cd2d8d388",
+        "4f599e358d3c8ed972c058e60005beb79372315d1cc5762cf0609db47bde1a08",
+        "afe0783891b26a6f7ecc5a036a7c26a6466c78fcc438e38104a7e8a67fca4a5c"
+      ]
+    },
+    {
+      "address": "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4",
+      "leaf": "89043b0f96c5b52c751dd2fd56e744e550512db56c67023ef8fc639cd2d8d388",
+      "proof": [
+        "a235e539d14a23acd6c6623172b945ebb9b3fe478df287d49e5de95c832332f3",
+        "4f599e358d3c8ed972c058e60005beb79372315d1cc5762cf0609db47bde1a08",
+        "afe0783891b26a6f7ecc5a036a7c26a6466c78fcc438e38104a7e8a67fca4a5c"
+      ]
+    },
+    {
+      "address": "account-hash-0000000000000000000000000000000000000000000000000000000000000000",
+      "leaf": "cf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f",
+      "proof": [
+        "1620e42f06eeb2d49943a3360a68392bb2e85d057ca7ba6be9a8c7c8cd7929a8",
+        "45dff5683975c7b755c0011d1704be7af005a70b9f6262fea1ebfc3fafc62594",
+        "afe0783891b26a6f7ecc5a036a7c26a6466c78fcc438e38104a7e8a67fca4a5c"
+      ]
+    },
+    {
+      "address": "account-hash-ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "leaf": "1620e42f06eeb2d49943a3360a68392bb2e85d057ca7ba6be9a8c7c8cd7929a8",
+      "proof": [
+        "cf077d276686ba64c0404b9eb2d15556782113c5a1985f262b70f9964d3bbd7f",
+        "45dff5683975c7b755c0011d1704be7af005a70b9f6262fea1ebfc3fafc62594",
+        "afe0783891b26a6f7ecc5a036a7c26a6466c78fcc438e38104a7e8a67fca4a5c"
+      ]
+    },
+    {
+      "address": "account-hash-a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+      "leaf": "afe0783891b26a6f7ecc5a036a7c26a6466c78fcc438e38104a7e8a67fca4a5c",
+      "proof": [
+        "7986d77a8b178acf33c34eeea580faa468debc509e17b31d4b8e97f3eee2436a"
+      ]
+    }
+  ],
+  "root": "79aeb8fa209387611d7c206edc8bc1dd1f4ca5c01de6dd684a9e3a5e22d1e018"
+}

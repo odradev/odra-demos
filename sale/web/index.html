@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Token sale on Casper</title>
+    <link rel="icon" href="./assets/favicon.png" />
+    <script>
+      // Read by the CSPR.click script, which src/main.ts loads once the client is ready.
+      const clickUIOptions = { uiContainer: "csprclick-ui", rootAppElement: "#root", showTopBar: false };
+      const clickSDKOptions = {
+        appName: "Casper Token Sale",
+        // The app registered with CSPR.click for odra.dev; on a developer's machine, the template
+        // id that CSPR.click accepts from localhost.
+        appId: ["localhost", "127.0.0.1"].includes(location.hostname)
+          ? "csprclick-template"
+          : "c0ec1653-18b0-45aa-bdb7-1bbeefac",
+        providers: ["casper-wallet", "ledger"],
+      };
+    </script>
+  </head>
+  <body>
+    <div id="csprclick-ui"></div>
+    <div id="root">
+      <header class="band">
+        <div class="inner">
+          <a href="../" title="All the demos"
+            ><img src="./assets/odra-logo-white.png" alt="Odra: all the demos" width="110" height="32"
+          /></a>
+          <span class="sep"></span>
+          <h1>Token sale</h1>
+        </div>
+      </header>
+
+      <main>
+        <div class="toolbar">
+          <span class="pill">Demo on the Casper testnet</span>
+          <div>
+            <button id="connect" class="primary" disabled>Connect wallet</button>
+            <div id="account" hidden>
+              <span id="account-key" class="mono"></span>
+              <button id="switch" class="small">Switch</button>
+              <button id="disconnect" class="small">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="hero">
+          <figure class="diagram">
+            <svg viewBox="0 0 360 200" role="img" aria-labelledby="diagram-title">
+              <title id="diagram-title">
+                Tokens received against CSPR paid: a straight line from zero, the same number of tokens for
+                every CSPR, that turns flat where the cap of the sale is reached.
+              </title>
+              <path class="guide" d="M40 50 H340 M40 110 H340" />
+              <path class="area" d="M40 170 L240 50 L240 170 Z" />
+              <path class="axis" d="M40 20 V170 H340" />
+              <path class="curve" d="M40 170 L240 50 H330" />
+              <circle class="point" cx="120" cy="122" r="6" />
+              <circle class="point" cx="240" cy="50" r="5" />
+              <text x="128" y="138">you: 2 CSPR for 4 tokens</text>
+              <text x="246" y="42">the cap: sold out</text>
+              <text x="44" y="30">tokens</text>
+              <text x="340" y="188" text-anchor="end">CSPR paid</text>
+              <text x="40" y="188">0</text>
+            </svg>
+            <figcaption>One price for everyone: every CSPR buys the same, until the cap is sold.</figcaption>
+          </figure>
+          <div class="text">
+            <div class="kicker">What a token sale is</div>
+            <p class="claim">Sell your token for CSPR at one fixed price, to everyone or only to a list</p>
+            <p class="sub">
+              You put the tokens on sale in one transaction and set the terms: the price of one token, how
+              many there are, how many one wallet may buy, and when buying opens and closes. A buyer sends
+              CSPR and receives the tokens in the same transaction, from the contract, not from you. For a
+              list of buyers the contract keeps only its fingerprint, a <b>Merkle root</b>, as the airdrop
+              does.
+            </p>
+            <ul class="points">
+              <li>The first buyer and the last pay the same price, and nobody can buy past the cap.</li>
+              <li>Take out the CSPR whenever you like, also while the sale runs.</li>
+              <li>After the sale closes, take back the tokens nobody bought.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div id="fatal" class="notice" hidden></div>
+
+        <section class="card steps">
+          <h2>Try it in three steps</h2>
+          <div class="asof">Everything here runs on the testnet. Nothing costs real money.</div>
+          <ol class="tiles">
+            <li id="step-connect" class="tile">
+              <div class="label"><span class="num">1</span>Step one</div>
+              <h3>Connect a wallet</h3>
+              <p class="sub">Casper Wallet, switched to the testnet, with some test CSPR.</p>
+            </li>
+            <li id="step-faucet" class="tile">
+              <div class="label"><span class="num">2</span>Step two</div>
+              <h3>Get free test tokens</h3>
+              <p class="sub">TEST is a token made for these demos. You have <b id="balance">—</b>.</p>
+              <button id="faucet" disabled>Get 1,000 TEST</button>
+            </li>
+            <li id="step-sale" class="tile">
+              <div class="label"><span class="num">3</span>Step three</div>
+              <h3>Put 100 TEST on sale, then buy some from yourself</h3>
+              <p class="sub">The example sells only to a list of you and two made-up accounts.</p>
+              <button id="example">Fill in an example</button>
+            </li>
+          </ol>
+        </section>
+
+        <div class="split">
+          <section class="card">
+            <h2>Buy tokens</h2>
+            <div class="asof">Opened from a sale link, this is filled in already.</div>
+            <form id="buy">
+              <label>
+                Sale number
+                <input id="b-sale" inputmode="numeric" placeholder="e.g. 0" />
+              </label>
+              <label id="b-list-field" hidden>
+                The list of buyers
+                <textarea
+                  id="b-list"
+                  class="mono"
+                  spellcheck="false"
+                  placeholder="This sale sells only to a list. Paste the list you were sent, exactly as it is"
+                ></textarea>
+                <span class="hint">The page works out from the list the proof that you are on it.</span>
+              </label>
+              <label>
+                How many to buy
+                <span class="with-unit"
+                  ><input id="b-amount" inputmode="decimal" placeholder="0" /><span id="b-unit" class="unit"
+                    >TEST</span
+                  ></span
+                >
+                <span id="b-amount-hint" class="hint"></span>
+              </label>
+              <div class="options">
+                <button id="b-max" type="button" class="small" disabled>The most I can buy</button>
+              </div>
+
+              <div class="callout">
+                <div class="label">What you pay and get</div>
+                <p id="buy-summary"></p>
+              </div>
+
+              <p id="buy-error" class="notice" hidden></p>
+              <button id="buy-submit" class="primary big" disabled>Buy</button>
+              <p id="buy-hint" class="hint"></p>
+            </form>
+          </section>
+
+          <section class="card">
+            <h2>The sale</h2>
+            <div class="asof">Every sale has a number and is public. No wallet needed.</div>
+            <div id="sale" class="list"><p class="empty">Enter a sale number to see it.</p></div>
+          </section>
+        </div>
+
+        <div class="split">
+          <section class="card">
+            <h2>Put tokens on sale</h2>
+            <div class="asof">The tokens leave your wallet now; buyers pay the contract in CSPR.</div>
+            <form id="create">
+              <details id="token-field">
+                <summary>Sell another token than TEST</summary>
+                <label>
+                  Token contract
+                  <input id="f-token" class="mono" placeholder="hash-… of a CEP-18 token" />
+                  <span id="f-token-info" class="hint"></span>
+                </label>
+              </details>
+
+              <label>
+                How many to sell
+                <span class="with-unit"
+                  ><input id="f-cap" inputmode="decimal" placeholder="100" /><span class="unit token-unit"
+                    >TEST</span
+                  ></span
+                >
+                <span class="hint">The cap: nobody can buy more than this, all buyers together.</span>
+              </label>
+              <label>
+                Price of one token
+                <span class="with-unit"
+                  ><input id="f-price" inputmode="decimal" placeholder="0.5" /><span class="unit">CSPR</span></span
+                >
+              </label>
+              <label>
+                Most one wallet may buy
+                <span class="with-unit"
+                  ><input id="f-per-wallet" inputmode="decimal" placeholder="no limit" /><span
+                    class="unit token-unit"
+                    >TEST</span
+                  ></span
+                >
+                <span class="hint">Leave it empty for no limit but the cap.</span>
+              </label>
+
+              <fieldset>
+                <legend>When buying is open</legend>
+                <div class="options">
+                  <button type="button" class="small" data-start="now">Opens now</button>
+                  <button type="button" class="small" data-start="1h">In an hour</button>
+                  <button type="button" class="small" data-start="1d">Tomorrow</button>
+                </div>
+                <label>
+                  Opens
+                  <input id="f-start" type="datetime-local" step="1" />
+                </label>
+                <div class="options">
+                  <button type="button" class="small" data-end="1h">Open an hour</button>
+                  <button type="button" class="small" data-end="1d">A day</button>
+                  <button type="button" class="small" data-end="1w">A week</button>
+                  <button type="button" class="small" data-end="30d">30 days</button>
+                </div>
+                <label>
+                  Closes
+                  <input id="f-end" type="datetime-local" step="1" />
+                  <span class="hint">After it nobody can buy, and you can take back what is unsold.</span>
+                </label>
+              </fieldset>
+
+              <fieldset>
+                <legend>Who can buy</legend>
+                <div class="options">
+                  <button type="button" class="small" data-who="everyone">Everyone</button>
+                  <button type="button" class="small" data-who="list">Only a list</button>
+                </div>
+                <label id="f-list-field" hidden>
+                  The list of buyers
+                  <textarea
+                    id="f-list"
+                    class="mono"
+                    spellcheck="false"
+                    placeholder="One per line&#10;0203…0105&#10;account-hash-2ccb…11c1"
+                  ></textarea>
+                  <span class="hint">
+                    A public key or an account hash per line. Only these accounts can buy, each up to the limit
+                    per wallet.
+                  </span>
+                </label>
+              </fieldset>
+
+              <div class="callout">
+                <div class="label">What will happen</div>
+                <p id="summary"></p>
+              </div>
+
+              <p id="create-error" class="notice" hidden></p>
+              <button id="create-submit" class="primary big" disabled>Put the tokens on sale</button>
+              <p id="create-hint" class="hint"></p>
+            </form>
+          </section>
+
+          <div class="stack">
+            <section id="share" class="card" hidden>
+              <h2>Share the sale</h2>
+              <div class="asof">Buyers need the number, and for a list sale the list. The chain has only its fingerprint.</div>
+              <p id="share-text"></p>
+              <label>
+                Sale link
+                <input id="share-link" class="mono" readonly />
+              </label>
+              <div class="actions">
+                <button id="share-copy" type="button">Copy the link</button>
+                <a id="share-file" class="button" hidden>Download the list</a>
+              </div>
+            </section>
+
+            <section class="card">
+              <h2>Who can buy</h2>
+              <div class="asof">Check the list before you sign. A sale cannot be changed once it is created.</div>
+              <div id="preview"></div>
+            </section>
+          </div>
+        </div>
+
+        <section id="sales-card" class="card">
+          <div class="row">
+            <h2>Sales</h2>
+            <div class="tabs" role="tablist">
+              <button role="tab" class="tab active" data-tab="all">Every sale</button>
+              <button role="tab" class="tab" data-tab="mine">Created by me</button>
+            </div>
+          </div>
+          <div id="list-note" class="asof">Newest first. Anyone can read them, no wallet needed.</div>
+          <div id="sales" class="list"><p class="empty">Loading…</p></div>
+          <button id="more" hidden>Show older sales</button>
+        </section>
+
+        <footer>
+          <p>
+            Built with <a href="https://odra.dev">Odra</a>. The contract is not audited; this page is a demo.
+            <span id="contract"></span>
+          </p>
+          <p><a href="../">All the demos</a></p>
+        </footer>
+      </main>
+    </div>
+
+    <div id="tx" class="toast" hidden>
+      <span id="tx-text"></span>
+      <a id="tx-link" target="_blank" rel="noopener noreferrer" hidden>View on cspr.live</a>
+      <button id="tx-close" class="small" aria-label="Dismiss">×</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

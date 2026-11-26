@@ -1,0 +1,48 @@
+/* What is particular to this app. The look comes from the shared Odra style, ../../../style/odra.css;
+   a component another app could use belongs in the style guide, not here. */
+
+#account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+footer #contract {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* The list of sales sits under the two rows of split columns. */
+#sales-card {
+  margin-top: var(--gap);
+}
+
+/* The button under the list that loads older sales. */
+#more {
+  justify-self: start;
+  margin-top: 12px;
+}
+
+/* The figures of the list above its table. */
+#preview dl.facts {
+  margin: 0 0 16px;
+}
+
+/* The share card holds text, a field and buttons outside a form. */
+#share {
+  display: grid;
+  gap: 12px;
+}
+
+#share > h2,
+#share > .asof,
+#share > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* A sentence under the tiles of a sale, and one beside its buttons. */
+.item > .hint,
+.item .actions .hint {
+  margin: 0;
+}

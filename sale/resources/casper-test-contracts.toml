@@ -1,0 +1,11 @@
+last_updated = "2026-11-26T08:16:40Z"
+
+[[contracts]]
+name = "TestToken"
+package_name = "TestToken"
+package_hash = "hash-0fafe6f2e4481d7c2e1b3d031a3634dc37189d2ff9c97d064b6a203d4b47ffe4"
+
+[[contracts]]
+name = "TokenSale"
+package_name = "TokenSale"
+package_hash = "hash-82a8af35e16c28cc7c2bf8f07e608783f57c8882b6bc9116f3c2513023d656b1"

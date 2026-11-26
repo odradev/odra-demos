@@ -1,0 +1,5 @@
+[[contracts]]
+fqn = "sale::TokenSale"
+
+[[contracts]]
+fqn = "token::TestToken"

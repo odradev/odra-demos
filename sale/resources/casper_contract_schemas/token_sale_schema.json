@@ -1,0 +1,631 @@
+{
+  "casper_contract_schema_version": 1,
+  "toolchain": "rustc 1.94.0-nightly (8d670b93d 2025-12-31)",
+  "toolkit": {
+    "name": "Odra",
+    "version": "2.10.0"
+  },
+  "authors": [],
+  "repository": null,
+  "homepage": null,
+  "contract_name": "TokenSale",
+  "contract_version": "0.1.0",
+  "types": [
+    {
+      "struct": {
+        "name": "ProceedsWithdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "sale_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U512"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "Sale",
+        "description": null,
+        "members": [
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "decimals",
+            "description": null,
+            "ty": "U8"
+          },
+          {
+            "name": "price",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "cap",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "per_wallet",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "allowlist_root",
+            "description": null,
+            "ty": {
+              "List": "U8"
+            }
+          },
+          {
+            "name": "sold",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "raised",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "buyers",
+            "description": null,
+            "ty": "U32"
+          },
+          {
+            "name": "withdrawn",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "reclaimed",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "SaleCreated",
+        "description": null,
+        "members": [
+          {
+            "name": "sale_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "token",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "price",
+            "description": null,
+            "ty": "U512"
+          },
+          {
+            "name": "cap",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "per_wallet",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "start",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "end",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "allowlist_root",
+            "description": null,
+            "ty": {
+              "List": "U8"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "TokensBought",
+        "description": null,
+        "members": [
+          {
+            "name": "sale_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "buyer",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          },
+          {
+            "name": "paid",
+            "description": null,
+            "ty": "U512"
+          }
+        ]
+      }
+    },
+    {
+      "struct": {
+        "name": "UnsoldWithdrawn",
+        "description": null,
+        "members": [
+          {
+            "name": "sale_id",
+            "description": null,
+            "ty": "U64"
+          },
+          {
+            "name": "creator",
+            "description": null,
+            "ty": "Key"
+          },
+          {
+            "name": "amount",
+            "description": null,
+            "ty": "U256"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "name": "EndInPast",
+      "description": "The end has already passed.",
+      "discriminant": 5
+    },
+    {
+      "name": "Ended",
+      "description": "The sale has ended.",
+      "discriminant": 10
+    },
+    {
+      "name": "ExceedsCap",
+      "description": "The purchase is larger than what is left of the cap.",
+      "discriminant": 13
+    },
+    {
+      "name": "ExceedsWalletLimit",
+      "description": "The purchase takes the buyer past the limit per wallet.",
+      "discriminant": 14
+    },
+    {
+      "name": "InexactPayment",
+      "description": "The CSPR attached does not buy a whole number of the token's smallest unit.",
+      "discriminant": 12
+    },
+    {
+      "name": "InvalidRoot",
+      "description": "The allowlist root is neither empty nor 32 bytes long.",
+      "discriminant": 6
+    },
+    {
+      "name": "InvalidWalletLimit",
+      "description": "The limit per wallet is zero or larger than the cap.",
+      "discriminant": 3
+    },
+    {
+      "name": "InvalidWindow",
+      "description": "The end is not after the start.",
+      "discriminant": 4
+    },
+    {
+      "name": "NotCreator",
+      "description": "Only the creator of the sale may do this.",
+      "discriminant": 16
+    },
+    {
+      "name": "NotEnded",
+      "description": "The sale has not ended yet.",
+      "discriminant": 18
+    },
+    {
+      "name": "NotOnAllowlist",
+      "description": "The proof does not show that the buyer is on the allowlist.",
+      "discriminant": 15
+    },
+    {
+      "name": "NotStarted",
+      "description": "The sale has not started yet.",
+      "discriminant": 9
+    },
+    {
+      "name": "NothingAttached",
+      "description": "No CSPR was attached to the purchase.",
+      "discriminant": 11
+    },
+    {
+      "name": "NothingToWithdraw",
+      "description": "There is no CSPR to take out.",
+      "discriminant": 17
+    },
+    {
+      "name": "NothingUnsold",
+      "description": "Everything was sold or taken back already.",
+      "discriminant": 19
+    },
+    {
+      "name": "SaleNotFound",
+      "description": "No sale has this id.",
+      "discriminant": 8
+    },
+    {
+      "name": "UnsupportedDecimals",
+      "description": "The token has more than `MAX_DECIMALS` decimals.",
+      "discriminant": 7
+    },
+    {
+      "name": "ZeroCap",
+      "description": "The cap is zero.",
+      "discriminant": 2
+    },
+    {
+      "name": "ZeroPrice",
+      "description": "The price is zero.",
+      "discriminant": 1
+    }
+  ],
+  "entry_points": [
+    {
+      "name": "create_sale",
+      "description": "Creates a sale and pulls `cap` of `token` from the caller, who must have approved this contract for at least that amount. `price` is the price of one whole token in motes; `cap` and `per_wallet` are in the token's smallest unit. Buying is open from block time `start` until `end` (milliseconds, `start` may be in the past). `allowlist_root` is the Merkle root of the addresses that may buy (see `crate::merkle`), or empty for a sale open to everyone. The id of the sale is the value `sales_count` returned before the call; the `SaleCreated` event carries it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "token",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        },
+        {
+          "name": "price",
+          "description": null,
+          "ty": "U512",
+          "optional": false
+        },
+        {
+          "name": "cap",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "per_wallet",
+          "description": null,
+          "ty": "U256",
+          "optional": false
+        },
+        {
+          "name": "start",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "end",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "allowlist_root",
+          "description": null,
+          "ty": {
+            "List": "U8"
+          },
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "buy",
+      "description": "Buys tokens of sale `sale_id` with the CSPR attached to the call and sends them to the caller. The CSPR buys `attached × 10^decimals / price` of the smallest unit, which must come out whole: the call reverts rather than keep CSPR that buys nothing. `proof` shows that the caller is on the allowlist: the nodes one after another, 32 bytes each. A sale without an allowlist ignores it.",
+      "is_mutable": true,
+      "is_payable": true,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "proof",
+          "description": null,
+          "ty": {
+            "List": "U8"
+          },
+          "optional": false
+        },
+        {
+          "name": "__cargo_purse",
+          "description": null,
+          "ty": "URef",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw_proceeds",
+      "description": "Sends the CSPR paid so far and not yet taken out to the creator. At any time, also while the sale runs. Only the creator may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "withdraw_unsold",
+      "description": "Sends the tokens left unsold back to the creator, once the sale has ended. Only the creator may call it.",
+      "is_mutable": true,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Unit",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "sale",
+      "description": "Returns the sale with the given id.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        }
+      ],
+      "return_ty": "Sale",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "sales_count",
+      "description": "Returns the number of sales created. Ids run from `0` to `count - 1`.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [],
+      "return_ty": "U64",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "sales_of_creator",
+      "description": "Returns the ids of the sales `creator` created, oldest first.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "creator",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": {
+        "List": "U64"
+      },
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "bought_by",
+      "description": "Returns what `buyer` has bought from sale `sale_id`, in the smallest unit of the token.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "buyer",
+          "description": null,
+          "ty": "Key",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    },
+    {
+      "name": "quote",
+      "description": "Returns what `paid` motes buy from sale `sale_id`, in the smallest unit of the token. Reverts as `buy` would if the amount is not whole or is more than is left; ignores the window, the wallet limit and the allowlist.",
+      "is_mutable": false,
+      "is_payable": false,
+      "arguments": [
+        {
+          "name": "sale_id",
+          "description": null,
+          "ty": "U64",
+          "optional": false
+        },
+        {
+          "name": "paid",
+          "description": null,
+          "ty": "U512",
+          "optional": false
+        }
+      ],
+      "return_ty": "U256",
+      "is_contract_context": true,
+      "access": "public"
+    }
+  ],
+  "events": [
+    {
+      "name": "ProceedsWithdrawn",
+      "ty": "ProceedsWithdrawn"
+    },
+    {
+      "name": "SaleCreated",
+      "ty": "SaleCreated"
+    },
+    {
+      "name": "TokensBought",
+      "ty": "TokensBought"
+    },
+    {
+      "name": "UnsoldWithdrawn",
+      "ty": "UnsoldWithdrawn"
+    }
+  ],
+  "call": {
+    "wasm_file_name": "TokenSale.wasm",
+    "description": null,
+    "arguments": [
+      {
+        "name": "odra_cfg_package_hash_key_name",
+        "description": "The arg name for the package hash key name.",
+        "ty": "String",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_allow_key_override",
+        "description": "If true and the key specified in odra_cfg_package_hash_key_name already exists, it will be overwritten.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgradable",
+        "description": "The arg name for the contract upgradeability setting.",
+        "ty": "Bool",
+        "optional": false
+      },
+      {
+        "name": "odra_cfg_is_upgrade",
+        "description": "The arg name for telling the installer that the contract is being upgraded.",
+        "ty": "Bool",
+        "optional": false
+      }
+    ]
+  },
+  "storage": {
+    "kind": "module",
+    "fields": [
+      {
+        "name": "sales",
+        "index": 1,
+        "kind": "mapping",
+        "key": "U64",
+        "value": {
+          "kind": "value",
+          "ty": "Sale"
+        }
+      },
+      {
+        "name": "count",
+        "index": 2,
+        "kind": "value",
+        "ty": "U64"
+      },
+      {
+        "name": "bought",
+        "index": 3,
+        "kind": "mapping",
+        "key": {
+          "Tuple2": [
+            "U64",
+            "Key"
+          ]
+        },
+        "value": {
+          "kind": "value",
+          "ty": "U256"
+        }
+      },
+      {
+        "name": "sales_of_creator",
+        "index": 4,
+        "kind": "mapping",
+        "key": "Key",
+        "value": {
+          "kind": "value",
+          "ty": {
+            "List": "U64"
+          }
+        }
+      }
+    ]
+  }
+}
